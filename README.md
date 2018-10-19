@@ -36,11 +36,11 @@ type Person = ReturnType<typeof validatePerson> // { name: string }
 ## ⚙️ Sanitization example
 
 ```typescript
-import { sanitize, validate } from 'fefe'
+import { transform, validate } from 'fefe'
 
-const sanitizeMovie = sanitize.object({
+const sanitizeMovie = transform.object({
   title: validate.string(),
-  releasedAt: sanitize.date()
+  releasedAt: transform.toDate()
 })
 
 // { title: string, releasedAt: Date }
@@ -59,9 +59,9 @@ Then `book` equals `{ title: 'Star Wars', releasedAt: Date(1977-05-25T12:00:00.0
 This is an example that can be applied to parsing environment variables or query string parameters.
 
 ```typescript
-import { sanitize, validate } from 'fefe'
+import { transform, validate } from 'fefe'
 
-const parseConfig = sanitize.object({
+const parseConfig = transform.object({
   gcloudCredentials: pipe(
     transform.fromJson(),
     validate.object({ key: validate.string() })
