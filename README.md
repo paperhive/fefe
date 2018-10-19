@@ -7,7 +7,8 @@
 `fefe` validates and sanitizes/transforms values with proper types.
 
 🔎 Validation<br/>
-⚙️ Sanitization/transformation<br/>
+⚙️ Sanitization<br/>
+🚀 Transformation<br/>
 🔌 Just functions – easily extendable
 
 ## 🔎 Validation example
