@@ -4,12 +4,12 @@
 [![Build Status](https://travis-ci.org/paperhive/fefe.svg?branch=master)](https://travis-ci.org/paperhive/fefe)
 [![codecov](https://codecov.io/gh/paperhive/fefe/branch/master/graph/badge.svg)](https://codecov.io/gh/paperhive/fefe)
 
-`fefe` validates and sanitizes/transforms values with proper types.
+`fefe` validates, sanitizes and transforms values with proper types.
 
-🔎 Validation<br/>
-⚙️ Sanitization<br/>
-🚀 Transformation<br/>
-🔌 Just functions – easily extendable
+**🔎 Validation:** checks a value (example: check if value is string)<br/>
+**⚙️ Sanitization:** if a value is not valid, try to transform it (example: transform value to `Date`)<br/>
+**🚀 Transformation:** transforms a value (example: parse JSON)<br/>
+**🔌 Schemas are functions**: easily extendable
 
 ## 🔎 Validation example
 
@@ -36,11 +36,11 @@ type Person = ReturnType<typeof validatePerson> // { name: string }
 ## ⚙️ Sanitization example
 
 ```typescript
-import { transform, validate } from 'fefe'
+import { sanitize, validate } from 'fefe'
 
-const sanitizeMovie = transform.object({
+const sanitizeMovie = validate.object({
   title: validate.string(),
-  releasedAt: transform.toDate()
+  releasedAt: sanitize.date()
 })
 
 // { title: string, releasedAt: Date }
@@ -59,16 +59,16 @@ Then `book` equals `{ title: 'Star Wars', releasedAt: Date(1977-05-25T12:00:00.0
 This is an example that can be applied to parsing environment variables or query string parameters.
 
 ```typescript
-import { transform, validate } from 'fefe'
+import { sanitize, transform, validate } from 'fefe'
 
-const parseConfig = transform.object({
+const parseConfig = validate.object({
   gcloudCredentials: pipe(
     transform.fromJson(),
     validate.object({ key: validate.string() })
   ),
   whitelist: pipe(
     validate.string(),
-    str => str.split(',').map(transform.number())
+    str => str.split(',').map(sanitize.number())
   )
 })
 
