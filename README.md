@@ -7,8 +7,8 @@
 `fefe` validates, sanitizes and transforms values with proper types.
 
 **🔎 Validation:** checks a value (example: check if value is string)<br/>
-**⚙️ Sanitization:** if a value is not valid, try to transform it (example: transform value to `Date`)<br/>
-**🚀 Transformation:** transforms a value (example: parse JSON)<br/>
+**⚙ Sanitization:** if a value is not valid, try to transform it (example: transform value to `Date`)<br/>
+**🛠️ Transformation:** transforms a value (example: parse JSON)<br/>
 **🔌 Schemas are functions**: easily extendable
 
 ## 🔎 Validation example
@@ -54,7 +54,7 @@ const book: Book = sanitizeMovie({
 
 Then `book` equals `{ title: 'Star Wars', releasedAt: Date(1977-05-25T12:00:00.000Z) }` (`releasedAt` now is a date).
 
-## 🚀 Transformation example
+## 🛠️ Transformation example
 
 This is an example that can be applied to parsing environment variables or query string parameters.
 
