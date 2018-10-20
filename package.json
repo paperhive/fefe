@@ -1,0 +1,51 @@
+{
+  "name": "fefe",
+  "version": "1.0.0-alpha.1",
+  "description": "Validate, sanitize and transform values with proper types.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "lint": "tslint -p tsconfig.json src/**/*.ts",
+    "prepare": "npm run build",
+    "test": "mocha --opts ./mocha.opts",
+    "test-cover": "nyc npm test",
+    "test-cover-submit": "nyc report --reporter=json && codecov -f coverage/*.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paperhive/fefe.git"
+  },
+  "keywords": [
+    "validate",
+    "sanitize",
+    "transform",
+    "parse",
+    "validation",
+    "sanitization",
+    "transformation",
+    "whitelist",
+    "whitelisting",
+    "parsing",
+    "types",
+    "typings",
+    "typescript"
+  ],
+  "author": "André Gaul <andre@paperhive.org>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/paperhive/fefe/issues"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.6",
+    "@types/mocha": "^5.2.5",
+    "chai": "^4.2.0",
+    "codecov": "^3.1.0",
+    "mocha": "^5.2.0",
+    "nyc": "^13.0.1",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "tslint-config-standard": "^8.0.1",
+    "typescript": "^3.1.2"
+  }
+}
