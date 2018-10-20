@@ -56,32 +56,31 @@ Then `book` equals `{ title: 'Star Wars', releasedAt: Date(1977-05-25T12:00:00.0
 
 ## 🛠️ Transformation example
 
-This is an example that can be applied to parsing environment variables or query string parameters.
+This is an example that can be applied to parsing environment variables or query string parameters. Note how easy it is to apply a chain of functions to transform and validate a value (here we use `ramda`).
 
 ```typescript
-import { sanitize, transform, validate } from 'fefe'
+import { sanitize, validate } from 'fefe'
+import { pipe } from 'ramda'
 
 const parseConfig = validate.object({
   gcloudCredentials: pipe(
-    transform.fromJson(),
+    validate.string(),
+    JSON.parse,
     validate.object({ key: validate.string() })
   ),
-  whitelist: pipe(
-    validate.string(),
-    str => str.split(',').map(sanitize.number())
-  )
+  whitelist: pipe(validate.string(), str => str.split(','))
 })
 
-// { gcloudCredentials: { key: string }, whitelist: number[] }
+// { gcloudCredentials: { key: string }, whitelist: string[] }
 type Config = ReturnType<typeof parseConfig>
 
 const config: Config = parseConfig({
   gcloudCredentials: '{"key":"secret"}',
-  whitelist: '42,1337'
+  whitelist: 'alice,bob'
 })
 ```
 
-Then `config` will equal `{ gcloudCredentials: { key: 'secret'}, whitelist: [42, 1337] }`.
+Then `config` will equal `{ gcloudCredentials: { key: 'secret'}, whitelist: ['alice', 'bob'] }`.
 
 **Note:** you can use validations in transformations.
 
