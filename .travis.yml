@@ -1,0 +1,12 @@
+language: node_js
+node_js:
+  - node
+script:
+  # lint
+  - npm run lint
+  # run tests with coverage report
+  - npm run test-cover
+  # submit coverage report
+  - npm run test-cover-submit
+  # transpile to js
+  - npm run build
