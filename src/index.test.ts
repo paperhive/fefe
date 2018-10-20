@@ -11,6 +11,8 @@ describe('validate integration tests', () => {
         street: validate.string(),
         zip: validate.number()
       }),
+      isVerified: validate.boolean(),
+      joinedAt: validate.date(),
       favoriteDishes: validate.array(validate.string())
     })
 
@@ -20,6 +22,8 @@ describe('validate integration tests', () => {
       name: 'André',
       age: 35,
       address: { street: 'Kreuzbergstr', zip: 10965 },
+      isVerified: true,
+      joinedAt: new Date(),
       favoriteDishes: ['Pho Bo', 'Sushi']
     }
 
