@@ -59,7 +59,7 @@ Then `book` equals `{ title: 'Star Wars', releasedAt: Date(1977-05-25T12:00:00.0
 This is an example that can be applied to parsing environment variables or query string parameters. Note how easy it is to apply a chain of functions to transform and validate a value (here we use `ramda`).
 
 ```typescript
-import { sanitize, validate } from 'fefe'
+import { validate } from 'fefe'
 import { pipe } from 'ramda'
 
 const parseConfig = validate.object({
