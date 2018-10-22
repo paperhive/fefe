@@ -2,17 +2,15 @@ import { FefeError } from '../errors'
 import { Validate } from './validate'
 
 export interface ValidateArrayOptions<R> {
-  elementValidate: Validate<R>
   minLength?: number
   maxLength?: number
 }
 
 export type ValidateArrayValue<R> = Validate<R> | ValidateArrayOptions<R>
 
-export function validateArray<R> (_options: ValidateArrayOptions<R> | Validate<R>): (value: unknown) => R[] {
-  const { elementValidate, minLength, maxLength }: ValidateArrayOptions<R> = typeof _options === 'object'
-    ? _options
-    : { elementValidate: _options }
+export function validateArray<R> (
+  elementValidate: Validate<R>,
+  { minLength, maxLength }: ValidateArrayOptions<R> = {}): (value: unknown) => R[] {
 
   return (value: unknown) => {
     if (!Array.isArray(value)) throw new FefeError(value, 'Not an array.')
