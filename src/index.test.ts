@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { pipe } from 'ramda'
 
-import { FefeError, validate } from '.'
+import { FefeError, transform, validate } from '.'
 
 describe('validate integration tests', () => {
   describe('Person', () => {
@@ -45,7 +45,7 @@ describe('validate integration tests', () => {
 describe('Complex example', () => {
   describe('Config', () => {
     const parseConfig = validate.object({
-      gcloudCredentials: pipe(validate.string(), JSON.parse, validate.object({ key: validate.string() })),
+      gcloudCredentials: pipe(validate.string(), transform.parseJson(), validate.object({ key: validate.string() })),
       whitelist: pipe(validate.string(), value => value.split(','))
     })
 
