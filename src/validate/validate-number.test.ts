@@ -29,5 +29,7 @@ describe('validateNumber()', () => {
       .to.throw(FefeError, 'Greater than 0.')
   })
 
-  it('return a valid number', () => expect(validateNumber()(1)).to.equal(1))
+  it('return a valid number', () => {
+    expect(validateNumber({ min: 0, max: 2 })(1)).to.equal(1)
+  })
 })
