@@ -95,3 +95,80 @@ Then `config` will equal `{ gcloudCredentials: { key: 'secret'}, whitelist: ['al
 
 **Note:** you can use validations in transformations.
 
+## Documentation
+
+### `FefeError`
+
+`fefe` throws a `FefeError` if a value can't be validated/transformed. A `FefeError` has the following properties:
+
+* `reason`: the reason for the error.
+* `value`: the value that was passed.
+* `path`: the path in `value` to where the error occured.
+
+### `validate.array(elementValidate, options?)`
+
+Returns a function `(value: unknown) => T[]` that checks that the given value is an array and that runs `elementValidate` on all elements. A new array with the results is returned.
+
+Options:
+* `elementValidate`: validator function `(value: unknown) => T` that is applied to each element. The return values are returned as a new array.
+* `options.minLength?`, `options.maxLength?`: restrict length of array
+
+### `validate.boolean()`
+
+Returns a function `(value: unknown) => boolean` that checks that whether `value` is a boolean.
+
+### `validate.date(options?)`
+
+Returns a function `(value: unknown) => Date` that checks that whether `value` is a Date.
+
+Options:
+* `options.min?`, `options.max?`: restrict date
+
+### `validate.number(options?)`
+
+Returns a function `(value: unknown) => number` that checks that whether `value` is a number.
+
+Options:
+* `options.min?`, `options.max?`: restrict number
+* `options.integer?`: require number to be an integer (default: `false`)
+* `options.allowNaN?`, `options.allowInfinity?`: allow `NaN` or `infinity` (default: `false`)
+
+### `validate.object(definition, options?)`
+
+Returns a function `(value: unknown) => {...}` that checks that whether `value` is an object and all values pass the validation as specified in `definition`. A new object is returned that has the results of the validator functions as values.
+
+Options:
+* `definition`: an object where each value is either:
+   * a validator functions `(value: unknown) => T` or
+   * an object with the following properties:
+      * `validate`: validator function `(value: unknown) => T`
+      * `optional?`: allow undefined values (default: `false`)
+      * `default?`: default value of type `T` or function `() => T` that returns a default value
+* `allowExcessProperties?`: allow excess properties (default: `false`)
+
+### `validate.string(options?)`
+
+Returns a function `(value: unknown) => string` that checks that whether `value` is a string.
+
+Options:
+* `options.minLength?`, `options.maxLength?`: restrict length of string
+* `options.regex?`: require string to match regex
+
+### `transform.parseBoolean()`
+
+Returns a function `(value: string) => boolean` that parses a string as a boolean.
+
+### `transform.parseDate(options?)`
+
+Returns a function `(value: string) => Date` that parses a string as a date.
+
+Options:
+* `options.iso?`: require value to be an ISO 8601 string.
+
+### `transform.parseJson()`
+
+Returns a function `(value: string) => any` that parses JSON.
+
+### `transform.parseNumber()`
+
+Returns a function `(value: string) => number` that parses a number.
