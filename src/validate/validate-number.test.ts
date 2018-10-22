@@ -19,6 +19,11 @@ describe('validateNumber()', () => {
       .to.throw(FefeError, 'Infinity is not allowed.')
   })
 
+  it('should throw if not integer', () => {
+    expect(() => validateNumber({ integer: true })(1.5))
+      .to.throw(FefeError, 'Not an integer.')
+  })
+
   it('should throw if less than min', () => {
     expect(() => validateNumber({ min: 0 })(-1))
       .to.throw(FefeError, 'Less than 0.')
@@ -30,6 +35,6 @@ describe('validateNumber()', () => {
   })
 
   it('return a valid number', () => {
-    expect(validateNumber({ min: 0, max: 2 })(1)).to.equal(1)
+    expect(validateNumber({ min: 0, max: 2, integer: true })(1)).to.equal(1)
   })
 })
