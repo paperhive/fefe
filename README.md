@@ -11,7 +11,15 @@ Validate, sanitize and transform values with proper types.
 **🛠️ Transformation:** transforms a value (example: parse JSON)<br/>
 **🔌 Schemas are functions**: easily extendable
 
-## 🔎 Validation example
+## Installation
+
+```bash
+npm install fefe
+```
+
+## Usage
+
+### 🔎 Validation example
 
 Validation only checks the provided value and returns it with proper types.
 
@@ -33,7 +41,7 @@ You can also use `fefe` to define your types easily:
 type Person = ReturnType<typeof validatePerson> // { name: string }
 ```
 
-## ⚙️ Basic transformation example (sanitization/parsing)
+### ⚙️ Basic transformation example (sanitization/parsing)
 
 In this example a `string` needs to be parsed as a `Date`. Note how easy it is to apply a chain of functions to validate and transform a value (here we use `ramda`).
 
@@ -57,7 +65,7 @@ const movie: Movie = sanitizeMovie({
 
 Then `movie` equals `{ title: 'Star Wars', releasedAt: Date(1977-05-25T12:00:00.000Z) }` (`releasedAt` now is a date).
 
-## 🛠️ Complex transformation example
+### 🛠️ Complex transformation example
 
 This is a more complex example that can be applied to parsing environment variables or query string parameters.
 
