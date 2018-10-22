@@ -24,7 +24,7 @@ export function validateArray<R> (_options: ValidateArrayOptions<R> | Validate<R
         return elementValidate(element)
       } catch (error) {
         if (error instanceof FefeError) {
-          throw error.createParentError(value, index.toString())
+          throw error.createParentError(value, index)
         }
         throw error
       }
