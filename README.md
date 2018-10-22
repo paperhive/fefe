@@ -35,7 +35,7 @@ const person = validatePerson({ name: 'Leia' })
 validatePerson({ foo: 'bar' })
 ```
 
-You can also use `fefe` to define your types easily:
+☝️ You can also use `fefe` to define your types easily:
 
 ```typescript
 type Person = ReturnType<typeof validatePerson> // { name: string }
