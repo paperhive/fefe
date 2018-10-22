@@ -33,30 +33,33 @@ You can also use `fefe` to define your types easily:
 type Person = ReturnType<typeof validatePerson> // { name: string }
 ```
 
-## ⚙️ Sanitization example
+## ⚙️ Basic transformation example (sanitization/parsing)
+
+In this example a `string` needs to be parsed as a `Date`. Note how easy it is to apply a chain of functions to validate and transform a value (here we use `ramda`).
 
 ```typescript
-import { sanitize, validate } from 'fefe'
+import { transform, validate } from 'fefe'
+import { pipe } from 'ramda'
 
 const sanitizeMovie = validate.object({
   title: validate.string(),
-  releasedAt: sanitize.date()
+  releasedAt: pipe(validate.string(), transform.parseDate())
 })
 
 // { title: string, releasedAt: Date }
 type Movie = ReturnType<typeof sanitizeMovie>
 
-const book: Book = sanitizeMovie({
+const movie: Movie = sanitizeMovie({
   title: 'Star Wars',
   releasedAt: '1977-05-25T12:00:00.000Z'
 })
 ```
 
-Then `book` equals `{ title: 'Star Wars', releasedAt: Date(1977-05-25T12:00:00.000Z) }` (`releasedAt` now is a date).
+Then `movie` equals `{ title: 'Star Wars', releasedAt: Date(1977-05-25T12:00:00.000Z) }` (`releasedAt` now is a date).
 
-## 🛠️ Transformation example
+## 🛠️ Complex transformation example
 
-This is an example that can be applied to parsing environment variables or query string parameters. Note how easy it is to apply a chain of functions to transform and validate a value (here we use `ramda`).
+This is a more complex example that can be applied to parsing environment variables or query string parameters.
 
 ```typescript
 import { transform, validate } from 'fefe'
