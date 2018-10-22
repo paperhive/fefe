@@ -17,7 +17,7 @@ type ValidateObjectReturnType<T> = T extends ValidateObjectDefinitionValue<infer
 
 export function validateObject<D extends ValidateObjectDefinition> (
   definition: D,
-  { noExcessKeys = true }: { noExcessKeys?: boolean } = {}
+  { allowExcessProperties = false }: { allowExcessProperties?: boolean } = {}
 ) {
   Object.entries(definition).forEach(([key, definitionValue]) => {
     if (typeof definitionValue !== 'object') return
@@ -31,9 +31,9 @@ export function validateObject<D extends ValidateObjectDefinition> (
     // tslint:disable-next-line:strict-type-predicates
     if (typeof value !== 'object' || value === null) throw new FefeError(value, 'Not an object.')
 
-    if (noExcessKeys) {
-      const excessKeys = Object.keys(value).filter(key => !definition[key])
-      if (excessKeys.length > 0) throw new FefeError(value, `Key(s) not allowed: ${excessKeys.join(', ')}`)
+    if (!allowExcessProperties) {
+      const excessProperties = Object.keys(value).filter(key => !definition[key])
+      if (excessProperties.length > 0) throw new FefeError(value, `Properties not allowed: ${excessProperties.join(', ')}`)
     }
 
     const validated = {} as {[k in keyof D]: ValidateObjectReturnType<D[k]>}

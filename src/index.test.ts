@@ -96,7 +96,7 @@ describe('Integration tests', () => {
 
     it('throws with an invalid config', () => {
       const invalidConfigInput = { ...validConfigInput, gcloudCredentials: '{ "key": "secret", "foo": "bar" }' }
-      expect(() => parseConfig(invalidConfigInput)).to.throw(FefeError, 'gcloudCredentials: Key(s) not allowed: foo')
+      expect(() => parseConfig(invalidConfigInput)).to.throw(FefeError, 'gcloudCredentials: Properties not allowed: foo')
         .that.deep.include({ value: invalidConfigInput, path: ['gcloudCredentials'] })
         .and.has.property('originalError').that.include({ value: { key: 'secret', foo: 'bar' } })
     })
