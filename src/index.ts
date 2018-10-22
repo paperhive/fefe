@@ -1,4 +1,7 @@
 export { FefeError } from './errors'
-import * as validate from './validate/validate'
 
+import * as transform from './transform/transform'
+export { transform }
+
+import * as validate from './validate/validate'
 export { validate }
