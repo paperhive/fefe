@@ -14,7 +14,8 @@ describe('Integration tests', () => {
       }),
       isVerified: validate.boolean(),
       joinedAt: validate.date(),
-      favoriteDishes: validate.array(validate.string())
+      favoriteDishes: validate.array(validate.string()),
+      notifications: validate.enum('immediately', 'daily', 'never')
     })
 
     type Person = ReturnType<typeof validatePerson>
@@ -25,7 +26,8 @@ describe('Integration tests', () => {
       address: { street: 'Kreuzbergstr', zip: 10965 },
       isVerified: true,
       joinedAt: new Date(),
-      favoriteDishes: ['Pho Bo', 'Sushi']
+      favoriteDishes: ['Pho Bo', 'Sushi'],
+      notifications: 'daily'
     }
 
     it('validates a person', () => {
