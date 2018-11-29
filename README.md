@@ -4,7 +4,7 @@
 [![Build Status](https://travis-ci.org/paperhive/fefe.svg?branch=master)](https://travis-ci.org/paperhive/fefe)
 [![codecov](https://codecov.io/gh/paperhive/fefe/branch/master/graph/badge.svg)](https://codecov.io/gh/paperhive/fefe)
 
-Validate, sanitize and transform values with proper types.
+Validate, sanitize and transform values with proper types and with zero dependencies.
 
 **🔎 Validation:** checks a value (example: check if value is string)<br/>
 **⚙ Sanitization:** if a value is not valid, try to transform it (example: transform value to `Date`)<br/>
