@@ -124,6 +124,10 @@ Returns a function `(value: unknown) => Date` that checks that whether `value` i
 Options:
 * `options.min?`, `options.max?`: restrict date
 
+### `validate.enum(value1, value2, ...)`
+
+Returns a function `(value: unknown) => value1 | value2 | ...` that checks whether value equals one of the strings `value1`, `value2`, ....
+
 ### `validate.number(options?)`
 
 Returns a function `(value: unknown) => number` that checks that whether `value` is a number.
