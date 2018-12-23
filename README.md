@@ -158,6 +158,10 @@ Options:
 * `options.minLength?`, `options.maxLength?`: restrict length of string
 * `options.regex?`: require string to match regex
 
+### `validate.union(validator1, validator2, ...)`
+
+Returns a function `(value: unknown) => return1 | return2 | ...` that returns the return value of the first validator called with `value` that does not throw. The function throws if all validators throw.
+
 ### `transform.parseBoolean()`
 
 Returns a function `(value: string) => boolean` that parses a string as a boolean.

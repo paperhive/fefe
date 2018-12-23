@@ -13,6 +13,7 @@ describe('Integration tests', () => {
         zip: validate.number()
       }),
       isVerified: validate.boolean(),
+      verifiedAt: validate.union(validate.date(), validate.enum('never')),
       joinedAt: validate.date(),
       favoriteDishes: validate.array(validate.string()),
       notifications: validate.enum('immediately', 'daily', 'never')
@@ -25,6 +26,7 @@ describe('Integration tests', () => {
       age: 35,
       address: { street: 'Kreuzbergstr', zip: 10965 },
       isVerified: true,
+      verifiedAt: 'never',
       joinedAt: new Date(),
       favoriteDishes: ['Pho Bo', 'Sushi'],
       notifications: 'daily'
