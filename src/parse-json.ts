@@ -1,7 +1,8 @@
-import { FefeError } from '../errors'
+import { FefeError } from './errors'
 
 export function parseJson () {
-  return (value: string) => {
+  return (value: unknown) => {
+    if (typeof value !== 'string') throw new FefeError(value, 'Not a string.')
     try {
       return JSON.parse(value)
     } catch (error) {

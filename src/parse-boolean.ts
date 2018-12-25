@@ -1,7 +1,8 @@
-import { FefeError } from '../errors'
+import { FefeError } from './errors'
 
 export function parseBoolean () {
-  return (value: string) => {
+  return (value: unknown) => {
+    if (typeof value !== 'string') throw new FefeError(value, 'Not a string.')
     switch (value) {
       case 'true':
         return true

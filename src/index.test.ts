@@ -49,7 +49,7 @@ describe('Integration tests', () => {
   describe('Basic transformation (sanitization)', () => {
     const sanitizeMovie = fefe.object({
       title: fefe.string(),
-      releasedAt: pipe(fefe.string(), fefe.transform.parseDate())
+      releasedAt: pipe(fefe.string(), fefe.parseDate())
     })
 
     // { title: string, releasedAt: Date }
@@ -77,7 +77,7 @@ describe('Integration tests', () => {
 
   describe('Complex transformation and validation', () => {
     const parseConfig = fefe.object({
-      gcloudCredentials: pipe(fefe.string(), fefe.transform.parseJson(), fefe.object({ key: fefe.string() })),
+      gcloudCredentials: pipe(fefe.string(), fefe.parseJson(), fefe.object({ key: fefe.string() })),
       whitelist: pipe(fefe.string(), value => value.split(','))
     })
 
