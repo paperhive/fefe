@@ -49,7 +49,7 @@ describe('Integration tests', () => {
   describe('Basic transformation (sanitization)', () => {
     const sanitizeMovie = fefe.object({
       title: fefe.string(),
-      releasedAt: pipe(fefe.string(), fefe.parseDate())
+      releasedAt: fefe.parseDate()
     })
 
     // { title: string, releasedAt: Date }
@@ -69,15 +69,35 @@ describe('Integration tests', () => {
     it('throws with an invalid date', () => {
       const invalidMovie = { title: 'Star Wars', releasedAt: 'foo' }
       expect(() => sanitizeMovie(invalidMovie))
-      .to.throw(fefe.FefeError, 'releasedAt: Not a date.')
-      .that.deep.include({ value: invalidMovie, path: ['releasedAt'] })
-      .and.has.property('originalError').that.include({ value: 'foo' })
+        .to.throw(fefe.FefeError, 'releasedAt: Not a date.')
+        .that.deep.include({ value: invalidMovie, path: ['releasedAt'] })
+        .and.has.property('originalError').that.include({ value: 'foo' })
+    })
+  })
+
+  describe('Basic transformation (on-demand sanitization)', () => {
+    const sanitizeDate = fefe.union(fefe.date(), fefe.parseDate())
+    const date = new Date()
+
+    it('returns a date', () => {
+      const sanitizedDate: Date = sanitizeDate(date)
+      expect(sanitizedDate).to.equal(date)
+    })
+
+    it('returns a parsed date', () => {
+      const sanitizedDate: Date = sanitizeDate(date.toISOString())
+      expect(sanitizedDate).to.eql(date)
+    })
+
+    it('throws with an invalid date', () => {
+      expect(() => sanitizeDate('foo'))
+        .to.throw(fefe.FefeError, 'Not of any expected type.')
     })
   })
 
   describe('Complex transformation and validation', () => {
     const parseConfig = fefe.object({
-      gcloudCredentials: pipe(fefe.string(), fefe.parseJson(), fefe.object({ key: fefe.string() })),
+      gcloudCredentials: pipe(fefe.parseJson(), fefe.object({ key: fefe.string() })),
       whitelist: pipe(fefe.string(), value => value.split(','))
     })
 
