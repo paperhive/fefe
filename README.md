@@ -71,7 +71,7 @@ Then `movie` equals `{ title: 'Star Wars', releasedAt: Date(1977-05-25T12:00:00.
 Sometimes a value might already be of the right type. In the following example we use `union()` to create a sanitizer that returns a provided value if it is a Date already and parse it otherwise. If it can't be parsed either the function will throw:
 
 ```typescript
-import { date, object, parseDate, string, union } from 'fefe'
+import { date, parseDate, union } from 'fefe'
 
 const sanitizeDate = union(date(), parseDate())
 ```
