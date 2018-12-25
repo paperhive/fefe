@@ -1,15 +1,15 @@
-import { FefeError } from '../errors'
-import { Validate } from './validate'
+import { FefeError } from './errors'
+import { Validator } from './validate'
 
 export interface ValidateArrayOptions<R> {
   minLength?: number
   maxLength?: number
 }
 
-export type ValidateArrayValue<R> = Validate<R> | ValidateArrayOptions<R>
+export type ValidateArrayValue<R> = Validator<R> | ValidateArrayOptions<R>
 
 export function validateArray<R> (
-  elementValidate: Validate<R>,
+  elementValidator: Validator<R>,
   { minLength, maxLength }: ValidateArrayOptions<R> = {}): (value: unknown) => R[] {
 
   return (value: unknown) => {
@@ -19,7 +19,7 @@ export function validateArray<R> (
 
     return value.map((element, index) => {
       try {
-        return elementValidate(element)
+        return elementValidator(element)
       } catch (error) {
         if (error instanceof FefeError) {
           throw error.createParentError(value, index)

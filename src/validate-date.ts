@@ -1,4 +1,4 @@
-import { FefeError } from '../errors'
+import { FefeError } from './errors'
 
 export interface ValidateDateOptions {
   min?: Date

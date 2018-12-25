@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 
-import { FefeError } from '../errors'
+import { FefeError } from './errors'
 import { validateObject } from './validate-object'
 import { validateString } from './validate-string'
 
@@ -32,13 +32,13 @@ describe('validateObject()', () => {
   })
 
   it('should validate an object with explicit notation', () => {
-    const validate = validateObject({ foo: { validate: validateString() } })
+    const validate = validateObject({ foo: { validator: validateString() } })
     const result: { foo: string } = validate({ foo: 'bar' })
     expect(result).to.eql({ foo: 'bar' })
   })
 
   it('should validate an object with optional key', () => {
-    const validate = validateObject({ foo: { validate: validateString(), optional: true } })
+    const validate = validateObject({ foo: { validator: validateString(), optional: true } })
     const result: { foo?: string } = validate({ foo: 'bar' })
     expect(result).to.eql({ foo: 'bar' })
     const emptyResult: { foo?: string } = validate({})
@@ -46,13 +46,13 @@ describe('validateObject()', () => {
   })
 
   it('should validate an object with default value', () => {
-    const validate = validateObject({ foo: { validate: validateString(), default: 'bar' } })
+    const validate = validateObject({ foo: { validator: validateString(), default: 'bar' } })
     const result: { foo: string } = validate({})
     expect(result).to.eql({ foo: 'bar' })
   })
 
   it('should validate an object with default value function', () => {
-    const validate = validateObject({ foo: { validate: validateString(), default: () => 'bar' } })
+    const validate = validateObject({ foo: { validator: validateString(), default: () => 'bar' } })
     const result: { foo: string } = validate({})
     expect(result).to.eql({ foo: 'bar' })
   })

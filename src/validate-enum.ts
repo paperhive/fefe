@@ -1,4 +1,4 @@
-import { FefeError } from '../errors'
+import { FefeError } from './errors'
 
 export function validateEnum<T extends string[]> (...args: T) {
   return (value: unknown) => {

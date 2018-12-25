@@ -1,4 +1,4 @@
-import { FefeError } from '../errors'
+import { FefeError } from './errors'
 
 export function validateBoolean () {
   return (value: unknown) => {

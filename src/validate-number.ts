@@ -1,4 +1,4 @@
-import { FefeError } from '../errors'
+import { FefeError } from './errors'
 
 export function validateNumber (
   { min, max, integer, allowNaN = false, allowInfinity = false }:

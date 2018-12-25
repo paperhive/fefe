@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 
-import { FefeError } from '../errors'
+import { FefeError } from './errors'
 import { validateBoolean } from './validate-boolean'
 import { validateString } from './validate-string'
 import { validateUnion } from './validate-union'

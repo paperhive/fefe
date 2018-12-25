@@ -1,13 +1,13 @@
-import { FefeError } from '../errors'
-import { Validate } from './validate'
+import { FefeError } from './errors'
+import { Validator } from './validate'
 
 export interface ValidateObjectOptions<R> {
-  validate: Validate<R>
+  validator: Validator<R>
   optional?: boolean
   default?: R | (() => R)
 }
 
-export type ValidateObjectDefinitionValue<R> = Validate<R> | ValidateObjectOptions<R>
+export type ValidateObjectDefinitionValue<R> = Validator<R> | ValidateObjectOptions<R>
 
 export type ValidateObjectDefinition = Record<string, ValidateObjectDefinitionValue<any>>
 
@@ -40,7 +40,7 @@ export function validateObject<D extends ValidateObjectDefinition> (
     Object.entries(definition).forEach(([key, definitionValue]) => {
       const options: ValidateObjectOptions<any> = typeof definitionValue === 'object' ?
         definitionValue :
-        { validate: definitionValue }
+        { validator: definitionValue }
 
       const currentValue: unknown = (value as any)[key]
 
@@ -56,7 +56,7 @@ export function validateObject<D extends ValidateObjectDefinition> (
         }
       }
       try {
-        validated[key] = options.validate(currentValue)
+        validated[key] = options.validator(currentValue)
       } catch (error) {
         if (error instanceof FefeError) {
           throw error.createParentError(value, key)
