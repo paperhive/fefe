@@ -1,6 +1,7 @@
-import { FefeError } from '../errors'
+import { FefeError } from './errors'
+import { Validator } from './validate'
 
-export function validateUnion<T extends any[]> (...validators: T) {
+export function union<T extends Validator<any>[]> (...validators: T) {
   return (value: unknown): ReturnType<T[number]> => {
     const errors: FefeError[] = []
     for (const validator of validators) {

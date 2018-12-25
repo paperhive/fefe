@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 
-import { FefeError } from '../errors'
+import { FefeError } from './errors'
 import { parseDate } from './parse-date'
 
 describe('parseDate()', () => {

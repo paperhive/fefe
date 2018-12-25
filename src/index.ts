@@ -1,7 +1,15 @@
 export { FefeError } from './errors'
 
-import * as transform from './transform/transform'
-export { transform }
-
-import * as validate from './validate/validate'
-export { validate }
+export { Validator } from './validate'
+export { array } from './array'
+export { boolean } from './boolean'
+export { date } from './date'
+export { _enum as enum } from './enum'
+export { number } from './number'
+export { object } from './object'
+export { parseBoolean } from './parse-boolean'
+export { parseDate } from './parse-date'
+export { parseJson } from './parse-json'
+export { parseNumber } from './parse-number'
+export { string } from './string'
+export { union } from './union'

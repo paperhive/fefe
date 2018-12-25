@@ -1,40 +1,40 @@
 import { expect } from 'chai'
 
-import { FefeError } from '../errors'
-import { validateNumber } from './validate-number'
+import { FefeError } from './errors'
+import { number } from './number'
 
-describe('validateNumber()', () => {
+describe('number()', () => {
   it('should throw if not a number', () => {
-    expect(() => validateNumber()('foo'))
+    expect(() => number()('foo'))
       .to.throw(FefeError, 'Not a number.')
   })
 
   it('should throw if NaN', () => {
-    expect(() => validateNumber()(1 / 0 - 1 / 0))
+    expect(() => number()(1 / 0 - 1 / 0))
       .to.throw(FefeError, 'NaN is not allowed.')
   })
 
   it('should throw if infinite', () => {
-    expect(() => validateNumber()(1 / 0))
+    expect(() => number()(1 / 0))
       .to.throw(FefeError, 'Infinity is not allowed.')
   })
 
   it('should throw if not integer', () => {
-    expect(() => validateNumber({ integer: true })(1.5))
+    expect(() => number({ integer: true })(1.5))
       .to.throw(FefeError, 'Not an integer.')
   })
 
   it('should throw if less than min', () => {
-    expect(() => validateNumber({ min: 0 })(-1))
+    expect(() => number({ min: 0 })(-1))
       .to.throw(FefeError, 'Less than 0.')
   })
 
   it('should throw if less than max', () => {
-    expect(() => validateNumber({ max: 0 })(11))
+    expect(() => number({ max: 0 })(11))
       .to.throw(FefeError, 'Greater than 0.')
   })
 
   it('return a valid number', () => {
-    expect(validateNumber({ min: 0, max: 2, integer: true })(1)).to.equal(1)
+    expect(number({ min: 0, max: 2, integer: true })(1)).to.equal(1)
   })
 })
