@@ -1,21 +1,21 @@
 import { FefeError } from './errors'
 import { Validator } from './validate'
 
-export interface ValidateObjectOptions<R> {
+export interface ObjectOptions<R> {
   validator: Validator<R>
   optional?: boolean
   default?: R | (() => R)
 }
 
-export type ValidateObjectDefinitionValue<R> = Validator<R> | ValidateObjectOptions<R>
+export type ObjectDefinitionValue<R> = Validator<R> | ObjectOptions<R>
 
-export type ValidateObjectDefinition = Record<string, ValidateObjectDefinitionValue<any>>
+export type ObjectDefinition = Record<string, ObjectDefinitionValue<any>>
 
-type ValidateObjectReturnType<T> = T extends ValidateObjectDefinitionValue<infer U>
+type ObjectReturnType<T> = T extends ObjectDefinitionValue<infer U>
   ? U | (T extends {optional: true} ? undefined : never)
   : never
 
-export function validateObject<D extends ValidateObjectDefinition> (
+export function object<D extends ObjectDefinition> (
   definition: D,
   { allowExcessProperties = false }: { allowExcessProperties?: boolean } = {}
 ) {
@@ -36,9 +36,9 @@ export function validateObject<D extends ValidateObjectDefinition> (
       if (excessProperties.length > 0) throw new FefeError(value, `Properties not allowed: ${excessProperties.join(', ')}`)
     }
 
-    const validated = {} as {[k in keyof D]: ValidateObjectReturnType<D[k]>}
+    const validated = {} as {[k in keyof D]: ObjectReturnType<D[k]>}
     Object.entries(definition).forEach(([key, definitionValue]) => {
-      const options: ValidateObjectOptions<any> = typeof definitionValue === 'object' ?
+      const options: ObjectOptions<any> = typeof definitionValue === 'object' ?
         definitionValue :
         { validator: definitionValue }
 

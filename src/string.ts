@@ -1,9 +1,12 @@
 import { FefeError } from './errors'
 
-export function validateString (
-  { minLength, maxLength, regex }:
-  { minLength?: number, maxLength?: number, regex?: RegExp } = {}
-) {
+export interface StringOptions {
+  minLength?: number
+  maxLength?: number
+  regex?: RegExp
+}
+
+export function string ({ minLength, maxLength, regex }: StringOptions = {}) {
   return (value: unknown) => {
     // tslint:disable-next-line:strict-type-predicates
     if (typeof value !== 'string') throw new FefeError(value, 'Not a string.')
