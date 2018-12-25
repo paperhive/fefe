@@ -9,7 +9,7 @@ Validate, sanitize and transform values with proper TypeScript types and with ze
 **🔎 Validation:** checks a value (example: check if value is string)<br/>
 **⚙ Sanitization:** if a value is not valid, try to transform it (example: transform value to `Date`)<br/>
 **🛠️ Transformation:** transforms a value (example: parse JSON)<br/>
-**🔌 Schemas are functions**: easily extendable
+**🔌 Everything is a function**: easily extendable
 
 ## Installation
 
@@ -24,9 +24,9 @@ npm install fefe
 Validation only checks the provided value and returns it with proper types.
 
 ```typescript
-import { validate } from 'fefe'
+import { object, string } from 'fefe'
 
-const validatePerson = validate.object({ name: validate.string() })
+const validatePerson = object({ name: string() })
 
 // result is of type { name: string }
 const person = validatePerson({ name: 'Leia' })
@@ -41,17 +41,18 @@ validatePerson({ foo: 'bar' })
 type Person = ReturnType<typeof validatePerson> // { name: string }
 ```
 
-### ⚙️ Basic transformation example (sanitization/parsing)
+### ⚙️ Basic transformation example
 
-In this example a `string` needs to be parsed as a `Date`. Note how easy it is to apply a chain of functions to validate and transform a value (here we use `ramda`).
+#### Parse a value
+
+In this example a `string` needs to be parsed as a `Date`.
 
 ```typescript
-import { transform, validate } from 'fefe'
-import { pipe } from 'ramda'
+import { object, parseDate, string } from 'fefe'
 
-const sanitizeMovie = validate.object({
-  title: validate.string(),
-  releasedAt: pipe(validate.string(), transform.parseDate())
+const sanitizeMovie = object({
+  title: string(),
+  releasedAt: parseDate()
 })
 
 // { title: string, releasedAt: Date }
@@ -65,35 +66,42 @@ const movie: Movie = sanitizeMovie({
 
 Then `movie` equals `{ title: 'Star Wars', releasedAt: Date(1977-05-25T12:00:00.000Z) }` (`releasedAt` now is a date).
 
-### 🛠️ Complex transformation example
+#### Parse a value on demand (sanitize)
 
-This is a more complex example that can be applied to parsing environment variables or query string parameters.
+Sometimes a value might already be of the right type. In the following example we use `union()` to create a sanitizer that returns a provided value if it is a Date already and parse it otherwise. If it can't be parsed either the function will throw:
 
 ```typescript
-import { transform, validate } from 'fefe'
+import { date, object, parseDate, string, union } from 'fefe'
+
+const sanitizeDate = union(date(), parseDate())
+```
+
+### 🛠️ Complex transformation example
+
+This is a more complex example that can be applied to parsing environment variables or query string parameters. Note how easy it is to apply a chain of functions to validate and transform a value (here we use `ramda`).
+
+```typescript
+import { object, parseJson, string } from 'fefe'
 import { pipe } from 'ramda'
 
-const parseConfig = validate.object({
+const parseConfig = object({
   gcloudCredentials: pipe(
-    validate.string(),
-    transform.parseJson(),
-    validate.object({ key: validate.string() })
+    parseJson(),
+    object({ secret: string() })
   ),
-  whitelist: pipe(validate.string(), str => str.split(','))
+  whitelist: pipe(string(), secret => str.split(','))
 })
 
-// { gcloudCredentials: { key: string }, whitelist: string[] }
+// { gcloudCredentials: { secret: string }, whitelist: string[] }
 type Config = ReturnType<typeof parseConfig>
 
 const config: Config = parseConfig({
-  gcloudCredentials: '{"key":"secret"}',
+  gcloudCredentials: '{"secret":"foobar"}',
   whitelist: 'alice,bob'
 })
 ```
 
-Then `config` will equal `{ gcloudCredentials: { key: 'secret'}, whitelist: ['alice', 'bob'] }`.
-
-**Note:** you can use validations in transformations.
+Then `config` will equal `{ gcloudCredentials: { secret: 'foobar'}, whitelist: ['alice', 'bob'] }`.
 
 ## Documentation
 
@@ -105,41 +113,41 @@ Then `config` will equal `{ gcloudCredentials: { key: 'secret'}, whitelist: ['al
 * `value`: the value that was passed.
 * `path`: the path in `value` to where the error occured.
 
-### `validate.array(elementValidate, options?)`
+### `array(elementValidator, options?)`
 
-Returns a function `(value: unknown) => T[]` that checks that the given value is an array and that runs `elementValidate` on all elements. A new array with the results is returned.
+Returns a function `(value: unknown) => T[]` that checks that the given value is an array and that runs `elementValidator` on all elements. A new array with the results is returned.
 
 Options:
-* `elementValidate`: validator function `(value: unknown) => T` that is applied to each element. The return values are returned as a new array.
+* `elementValidator`: validator function `(value: unknown) => T` that is applied to each element. The return values are returned as a new array.
 * `options.minLength?`, `options.maxLength?`: restrict length of array
 
-### `validate.boolean()`
+### `boolean()`
 
-Returns a function `(value: unknown) => boolean` that checks that whether `value` is a boolean.
+Returns a function `(value: unknown) => boolean` that returns `value` if it is a boolean and throws otherwise.
 
-### `validate.date(options?)`
+### `date(options?)`
 
-Returns a function `(value: unknown) => Date` that checks that whether `value` is a Date.
+Returns a function `(value: unknown) => Date` that returns `value` if it is a Date and throws otherwise.
 
 Options:
 * `options.min?`, `options.max?`: restrict date
 
-### `validate.enum(value1, value2, ...)`
+### `enum(value1, value2, ...)`
 
-Returns a function `(value: unknown) => value1 | value2 | ...` that checks whether value equals one of the strings `value1`, `value2`, ....
+Returns a function `(value: unknown) => value1 | value2 | ...` that returns `value` if if equals one of the strings `value1`, `value2`, .... and throws otherwise.
 
-### `validate.number(options?)`
+### `number(options?)`
 
-Returns a function `(value: unknown) => number` that checks that whether `value` is a number.
+Returns a function `(value: unknown) => number` that returns `value` if it is a number and throws otherwise.
 
 Options:
 * `options.min?`, `options.max?`: restrict number
 * `options.integer?`: require number to be an integer (default: `false`)
 * `options.allowNaN?`, `options.allowInfinity?`: allow `NaN` or `infinity` (default: `false`)
 
-### `validate.object(definition, options?)`
+### `object(definition, options?)`
 
-Returns a function `(value: unknown) => {...}` that checks that whether `value` is an object and all values pass the validation as specified in `definition`. A new object is returned that has the results of the validator functions as values.
+Returns a function `(value: unknown) => {...}` that returns `value` if it is an object and all values pass the validation as specified in `definition`, otherwise it throws. A new object is returned that has the results of the validator functions as values.
 
 Options:
 * `definition`: an object where each value is either:
@@ -148,35 +156,35 @@ Options:
       * `validate`: validator function `(value: unknown) => T`
       * `optional?`: allow undefined values (default: `false`)
       * `default?`: default value of type `T` or function `() => T` that returns a default value
-* `allowExcessProperties?`: allow excess properties (default: `false`)
+* `allowExcessProperties?`: allow excess properties in `value` (default: `false`). Excess properties are not copied to the returned object.
 
-### `validate.string(options?)`
+### `string(options?)`
 
-Returns a function `(value: unknown) => string` that checks that whether `value` is a string.
+Returns a function `(value: unknown) => string` that returns `value` if it is a string and throws otherwise.
 
 Options:
 * `options.minLength?`, `options.maxLength?`: restrict length of string
 * `options.regex?`: require string to match regex
 
-### `validate.union(validator1, validator2, ...)`
+### `union(validator1, validator2, ...)`
 
 Returns a function `(value: unknown) => return1 | return2 | ...` that returns the return value of the first validator called with `value` that does not throw. The function throws if all validators throw.
 
-### `transform.parseBoolean()`
+### `parseBoolean()`
 
 Returns a function `(value: string) => boolean` that parses a string as a boolean.
 
-### `transform.parseDate(options?)`
+### `parseDate(options?)`
 
 Returns a function `(value: string) => Date` that parses a string as a date.
 
 Options:
 * `options.iso?`: require value to be an ISO 8601 string.
 
-### `transform.parseJson()`
+### `parseJson()`
 
-Returns a function `(value: string) => any` that parses JSON.
+Returns a function `(value: string) => any` that parses a JSON string.
 
-### `transform.parseNumber()`
+### `parseNumber()`
 
-Returns a function `(value: string) => number` that parses a number.
+Returns a function `(value: string) => number` that parses a number string.
