@@ -9,7 +9,7 @@ Validate, sanitize and transform values with proper TypeScript types and with ze
 **🔎 Validation:** checks a value (example: check if value is string)<br/>
 **⚙ Sanitization:** if a value is not valid, try to transform it (example: transform value to `Date`)<br/>
 **🛠️ Transformation:** transforms a value (example: parse JSON)<br/>
-**🔌 Everything is a function**: easily extendable
+**🔌 Everything is a function**: functional approach makes it easy to extend – just plug in your own function anywhere!
 
 ## Installation
 
