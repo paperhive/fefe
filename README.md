@@ -153,7 +153,7 @@ Options:
 * `definition`: an object where each value is either:
    * a validator functions `(value: unknown) => T` or
    * an object with the following properties:
-      * `validate`: validator function `(value: unknown) => T`
+      * `validator`: validator function `(value: unknown) => T`
       * `optional?`: allow undefined values (default: `false`)
       * `default?`: default value of type `T` or function `() => T` that returns a default value
 * `allowExcessProperties?`: allow excess properties in `value` (default: `false`). Excess properties are not copied to the returned object.
