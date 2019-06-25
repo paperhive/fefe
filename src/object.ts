@@ -67,3 +67,10 @@ export function object<D extends ObjectDefinition> (
     return validated
   }
 }
+
+export function optional<R> (validator: Validator<R>): ObjectOptions<R> {
+  return {
+    validator,
+    optional: true
+  }
+}
