@@ -37,7 +37,7 @@ export function object<D extends ObjectDefinition> (
     }
 
     const validated = {} as {[k in keyof D]: ObjectReturnType<D[k]>}
-    Object.entries(definition).forEach(([key, definitionValue]) => {
+    Object.entries(definition).forEach(([key, definitionValue]: [keyof D, ObjectDefinitionValue<any>]) => {
       const options: ObjectOptions<any> = typeof definitionValue === 'object' ?
         definitionValue :
         { validator: definitionValue }
