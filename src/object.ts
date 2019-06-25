@@ -68,6 +68,13 @@ export function object<D extends ObjectDefinition> (
   }
 }
 
+export function defaultTo<R> (validator: Validator<R>, _default: R | (() => R)): ObjectOptions<R> {
+  return {
+    validator,
+    default: _default
+  }
+}
+
 export function optional<R> (validator: Validator<R>): ObjectOptions<R> {
   return {
     validator,

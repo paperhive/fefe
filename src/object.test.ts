@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 
 import { FefeError } from './errors'
-import { object, optional, ObjectOptions } from './object'
+import { object, defaultTo, optional, ObjectOptions } from './object'
 import { string } from './string'
 
 describe('object()', () => {
@@ -55,6 +55,14 @@ describe('object()', () => {
     const validate = object({ foo: { validator: string(), default: () => 'bar' } })
     const result: { foo: string } = validate({})
     expect(result).to.eql({ foo: 'bar' })
+  })
+})
+
+describe('defaultTo()', () => {
+  it('should return an object options object with default value/function', () => {
+    const validator = string()
+    const options: ObjectOptions<string> = defaultTo(validator, 'foo')
+    expect(options).to.eql({ validator, default: 'foo' })
   })
 })
 
