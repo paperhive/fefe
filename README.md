@@ -158,7 +158,9 @@ Options:
       * `default?`: default value of type `T` or function `() => T` that returns a default value
 * `allowExcessProperties?`: allow excess properties in `value` (default: `false`). Excess properties are not copied to the returned object.
 
-You can use the `optional(validator)` helper to generate an optional key validator with the given `validator`.
+You can use the following helpers:
+* `optional(validator)`: generates an optional key validator with the given `validator`.
+* `defaultTo(validator, default)`: generates a key validator that defaults to `default` (also see `default` option above).
 
 ### `string(options?)`
 
