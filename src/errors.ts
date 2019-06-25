@@ -6,7 +6,7 @@ export class ExtendableError extends Error {
 }
 
 export interface FefeChildError {
-  key: string | number
+  key: string | number | symbol
   error: FefeError
 }
 
@@ -16,7 +16,7 @@ export class FefeError extends ExtendableError {
   public readonly child?: FefeChildError
 
   // derived properties
-  public readonly path: (string | number)[]
+  public readonly path: (string | number | symbol)[]
   public readonly originalError: FefeError
 
   constructor (value: any, reason: string, child?: FefeChildError) {
@@ -29,7 +29,7 @@ export class FefeError extends ExtendableError {
     this.originalError = child ? child.error.originalError : this
   }
 
-  createParentError (parentValue: any, key: string | number) {
+  createParentError (parentValue: any, key: string | number | symbol) {
     const child: FefeChildError = { key, error: this }
     return new FefeError(parentValue, this.reason, child)
   }
