@@ -13,10 +13,10 @@ describe('Integration tests', () => {
         zip: fefe.number()
       }),
       isVerified: fefe.boolean(),
-      verifiedAt: fefe.union(fefe.date(), fefe.enum('never')),
+      verifiedAt: fefe.union(fefe.date(), fefe.enumerate('never')),
       joinedAt: fefe.date(),
       favoriteDishes: fefe.array(fefe.string()),
-      notifications: fefe.enum('immediately', 'daily', 'never')
+      notifications: fefe.enumerate('immediately', 'daily', 'never')
     })
 
     type Person = ReturnType<typeof validatePerson>

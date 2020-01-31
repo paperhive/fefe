@@ -132,7 +132,7 @@ Returns a function `(value: unknown) => Date` that returns `value` if it is a Da
 Options:
 * `options.min?`, `options.max?`: restrict date
 
-### `enum(value1, value2, ...)`
+### `enumerate(value1, value2, ...)`
 
 Returns a function `(value: unknown) => value1 | value2 | ...` that returns `value` if if equals one of the strings `value1`, `value2`, .... and throws otherwise.
 
