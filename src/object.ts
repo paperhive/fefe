@@ -75,7 +75,7 @@ export function defaultTo<R> (validator: Validator<R>, _default: R | (() => R)):
   }
 }
 
-export function optional<R> (validator: Validator<R>): ObjectOptions<R> {
+export function optional<R> (validator: Validator<R>): {validator: Validator<R>, optional: true} {
   return {
     validator,
     optional: true

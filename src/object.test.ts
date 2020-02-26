@@ -69,7 +69,12 @@ describe('defaultTo()', () => {
 describe('optional()', () => {
   it('should return an optional object options object', () => {
     const validator = string()
-    const options: ObjectOptions<string> = optional(validator)
+    const options = optional(validator)
     expect(options).to.eql({ validator, optional: true })
+    const validate = object({ foo: options })
+    const result: { foo?: string } = validate({ foo: 'bar' })
+    expect(result).to.eql({ foo: 'bar' })
+    const emptyResult: { foo?: string } = validate({})
+    expect(emptyResult).to.eql({})
   })
 })
