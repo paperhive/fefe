@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2] - 2020-02-26
+
+### Fixed
+
+- Fix missing export of `defaultTo`. Thx @alanpearce! #13
+
+
 ## [2.0.1] - 2020-02-26
 
 ### Fixed
