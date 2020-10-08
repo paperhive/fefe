@@ -12,8 +12,16 @@ export type ObjectDefinitionValue<R> = Validator<R> | ObjectOptions<R>
 export type ObjectDefinition = Record<string, ObjectDefinitionValue<any>>
 
 type ObjectReturnType<T> = T extends ObjectDefinitionValue<infer U>
-  ? U | (T extends {optional: true} ? undefined : never)
+  ? U
   : never
+
+type FilterObject<T, C> = { [k in keyof T]: T[k] extends C ? k : never}
+type MatchingKeys<T, C> = FilterObject<T, C>[keyof T]
+type NotFilterObject<T, C> = { [k in keyof T]: T[k] extends C ? never : k}
+type NonMatchingKeys<T, C> = NotFilterObject<T, C>[keyof T]
+
+type MandatoryKeys<D> = NonMatchingKeys<D, {optional: true}>
+type OptionalKeys<D> = MatchingKeys<D, {optional: true}>
 
 export function object<D extends ObjectDefinition> (
   definition: D,
@@ -36,8 +44,10 @@ export function object<D extends ObjectDefinition> (
       if (excessProperties.length > 0) throw new FefeError(value, `Properties not allowed: ${excessProperties.join(', ')}`)
     }
 
-    const validated = {} as {[k in keyof D]: ObjectReturnType<D[k]>}
-    Object.entries(definition).forEach(([key, definitionValue]: [keyof D, ObjectDefinitionValue<any>]) => {
+    const validated = {} as
+      { [k in MandatoryKeys<D>]: ObjectReturnType<D[k]> } &
+      { [k in OptionalKeys<D>]?: ObjectReturnType<D[k]> }
+    Object.entries(definition).forEach(([key, definitionValue]: [string, ObjectDefinitionValue<any>]) => {
       const options: ObjectOptions<any> = typeof definitionValue === 'object' ?
         definitionValue :
         { validator: definitionValue }
@@ -47,7 +57,7 @@ export function object<D extends ObjectDefinition> (
       // tslint:disable-next-line:strict-type-predicates
       if (currentValue === undefined) {
         if (options.default !== undefined) {
-          validated[key] = typeof options.default === 'function' ? options.default() : options.default
+          validated[key as keyof typeof validated] = typeof options.default === 'function' ? options.default() : options.default
           return
         }
 
@@ -56,7 +66,7 @@ export function object<D extends ObjectDefinition> (
         }
       }
       try {
-        validated[key] = options.validator(currentValue)
+        validated[key as keyof typeof validated] = options.validator(currentValue)
       } catch (error) {
         if (error instanceof FefeError) {
           throw error.createParentError(value, key)
