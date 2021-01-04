@@ -14,6 +14,12 @@ describe('parseDate()', () => {
       .to.throw(FefeError, 'Not an ISO 8601 date string.')
   })
 
+  it('should parse an ISO date string without milliseconds', () => {
+    const date = '2018-10-22T09:40:40Z'
+    const parsedDate = parseDate({ iso: true })(date)
+    expect(parsedDate.getTime()).to.equal(new Date(date).getTime())
+  })
+
   it('return parsed date', () => {
     const date = new Date()
     const parsedDate = parseDate({ iso: true })(date.toISOString())
