@@ -5,13 +5,14 @@ import { parseDate } from './parse-date'
 
 describe('parseDate()', () => {
   it('should throw if not a date', () => {
-    expect(() => parseDate()('foo'))
-      .to.throw(FefeError, 'Not a date.')
+    expect(() => parseDate()('foo')).to.throw(FefeError, 'Not a date.')
   })
 
   it('should throw if not an ISO date string', () => {
-    expect(() => parseDate({ iso: true })('2018-10-22T09:40:40'))
-      .to.throw(FefeError, 'Not an ISO 8601 date string.')
+    expect(() => parseDate({ iso: true })('2018-10-22T09:40:40')).to.throw(
+      FefeError,
+      'Not an ISO 8601 date string.'
+    )
   })
 
   it('should parse an ISO date string without milliseconds', () => {

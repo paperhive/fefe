@@ -10,13 +10,13 @@ describe('Integration tests', () => {
       age: fefe.number({ min: 0 }),
       address: fefe.object({
         street: fefe.string(),
-        zip: fefe.number()
+        zip: fefe.number(),
       }),
       isVerified: fefe.boolean(),
       verifiedAt: fefe.union(fefe.date(), fefe.enumerate('never')),
       joinedAt: fefe.date(),
       favoriteDishes: fefe.array(fefe.string()),
-      notifications: fefe.enumerate('immediately', 'daily', 'never')
+      notifications: fefe.enumerate('immediately', 'daily', 'never'),
     })
 
     type Person = ReturnType<typeof validatePerson>
@@ -29,7 +29,7 @@ describe('Integration tests', () => {
       verifiedAt: 'never',
       joinedAt: new Date(),
       favoriteDishes: ['Pho Bo', 'Sushi'],
-      notifications: 'daily'
+      notifications: 'daily',
     }
 
     it('validates a person', () => {
@@ -38,31 +38,32 @@ describe('Integration tests', () => {
     })
 
     it('throws with an invalid person', () => {
-      const invalidPerson = { ...validPerson, address: { street: 'Ackerstr', zip: 'foo' } }
+      const invalidPerson = {
+        ...validPerson,
+        address: { street: 'Ackerstr', zip: 'foo' },
+      }
       expect(() => validatePerson(invalidPerson))
         .to.throw(fefe.FefeError, 'address.zip: Not a number.')
         .that.deep.include({ value: invalidPerson, path: ['address', 'zip'] })
-        .and.has.property('originalError').that.include({ value: 'foo' })
+        .and.has.property('originalError')
+        .that.include({ value: 'foo' })
     })
   })
 
   describe('Basic transformation (sanitization)', () => {
     const sanitizeMovie = fefe.object({
       title: fefe.string(),
-      releasedAt: fefe.parseDate()
+      releasedAt: fefe.parseDate(),
     })
-
-    // { title: string, releasedAt: Date }
-    type Movie = ReturnType<typeof sanitizeMovie>
 
     it('validates a movie and parses the date string', () => {
       const movie = sanitizeMovie({
         title: 'Star Wars',
-        releasedAt: '1977-05-25T12:00:00.000Z'
+        releasedAt: '1977-05-25T12:00:00.000Z',
       })
       expect(movie).to.eql({
         title: 'Star Wars',
-        releasedAt: new Date('1977-05-25T12:00:00.000Z')
+        releasedAt: new Date('1977-05-25T12:00:00.000Z'),
       })
     })
 
@@ -71,7 +72,8 @@ describe('Integration tests', () => {
       expect(() => sanitizeMovie(invalidMovie))
         .to.throw(fefe.FefeError, 'releasedAt: Not a date.')
         .that.deep.include({ value: invalidMovie, path: ['releasedAt'] })
-        .and.has.property('originalError').that.include({ value: 'foo' })
+        .and.has.property('originalError')
+        .that.include({ value: 'foo' })
     })
   })
 
@@ -90,27 +92,32 @@ describe('Integration tests', () => {
     })
 
     it('throws with an invalid date', () => {
-      expect(() => sanitizeDate('foo'))
-        .to.throw(fefe.FefeError, 'Not of any expected type.')
+      expect(() => sanitizeDate('foo')).to.throw(
+        fefe.FefeError,
+        'Not of any expected type.'
+      )
     })
   })
 
   describe('Complex transformation and validation', () => {
     const parseConfig = fefe.object({
-      gcloudCredentials: pipe(fefe.parseJson(), fefe.object({ key: fefe.string() })),
-      whitelist: pipe(fefe.string(), value => value.split(','))
+      gcloudCredentials: pipe(
+        fefe.parseJson(),
+        fefe.object({ key: fefe.string() })
+      ),
+      whitelist: pipe(fefe.string(), (value) => value.split(',')),
     })
 
     type Config = ReturnType<typeof parseConfig>
 
     const validConfig: Config = {
       gcloudCredentials: { key: 'secret' },
-      whitelist: ['alice', 'bob']
+      whitelist: ['alice', 'bob'],
     }
 
     const validConfigInput = {
       gcloudCredentials: '{ "key": "secret" }',
-      whitelist: 'alice,bob'
+      whitelist: 'alice,bob',
     }
 
     it('parses a config', () => {
@@ -119,10 +126,21 @@ describe('Integration tests', () => {
     })
 
     it('throws with an invalid config', () => {
-      const invalidConfigInput = { ...validConfigInput, gcloudCredentials: '{ "key": "secret", "foo": "bar" }' }
-      expect(() => parseConfig(invalidConfigInput)).to.throw(fefe.FefeError, 'gcloudCredentials: Properties not allowed: foo')
-        .that.deep.include({ value: invalidConfigInput, path: ['gcloudCredentials'] })
-        .and.has.property('originalError').that.include({ value: { key: 'secret', foo: 'bar' } })
+      const invalidConfigInput = {
+        ...validConfigInput,
+        gcloudCredentials: '{ "key": "secret", "foo": "bar" }',
+      }
+      expect(() => parseConfig(invalidConfigInput))
+        .to.throw(
+          fefe.FefeError,
+          'gcloudCredentials: Properties not allowed: foo'
+        )
+        .that.deep.include({
+          value: invalidConfigInput,
+          path: ['gcloudCredentials'],
+        })
+        .and.has.property('originalError')
+        .that.include({ value: { key: 'secret', foo: 'bar' } })
     })
   })
 })

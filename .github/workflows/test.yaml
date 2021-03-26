@@ -1,0 +1,22 @@
+name: Test
+
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['14', '15']
+    name: 'Build and test on node ${{ matrix.node }}'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run test-cover
+      - uses: codecov/codecov-action@v1
+      - run: npm run build

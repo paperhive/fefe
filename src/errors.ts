@@ -1,5 +1,5 @@
 export class ExtendableError extends Error {
-  constructor (message: string) {
+  constructor(message: string) {
     super(message)
     Object.setPrototypeOf(this, new.target.prototype)
   }
@@ -11,7 +11,7 @@ export interface FefeChildError {
 }
 
 export class FefeError extends ExtendableError {
-  public readonly value: any
+  public readonly value: unknown
   public readonly reason: string
   public readonly child?: FefeChildError
 
@@ -19,7 +19,7 @@ export class FefeError extends ExtendableError {
   public readonly path: (string | number | symbol)[]
   public readonly originalError: FefeError
 
-  constructor (value: any, reason: string, child?: FefeChildError) {
+  constructor(value: unknown, reason: string, child?: FefeChildError) {
     const path = child ? [child.key, ...child.error.path] : []
     super(child ? `${path.join('.')}: ${reason}` : reason)
     this.value = value
@@ -29,7 +29,10 @@ export class FefeError extends ExtendableError {
     this.originalError = child ? child.error.originalError : this
   }
 
-  createParentError (parentValue: any, key: string | number | symbol) {
+  createParentError(
+    parentValue: unknown,
+    key: string | number | symbol
+  ): FefeError {
     const child: FefeChildError = { key, error: this }
     return new FefeError(parentValue, this.reason, child)
   }

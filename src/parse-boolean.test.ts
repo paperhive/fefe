@@ -5,8 +5,7 @@ import { parseBoolean } from './parse-boolean'
 
 describe('parseBoolean()', () => {
   it('should throw if not a boolean', () => {
-    expect(() => parseBoolean()('foo'))
-      .to.throw(FefeError, 'Not a boolean.')
+    expect(() => parseBoolean()('foo')).to.throw(FefeError, 'Not a boolean.')
   })
 
   it('return parsed boolean', () => {

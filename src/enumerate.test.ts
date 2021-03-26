@@ -6,10 +6,8 @@ import { enumerate } from './enumerate'
 describe('enumerate()', () => {
   const validate = enumerate('foo', 'bar')
   it('should throw if value is not in the list', () => {
-    expect(() => validate('baz'))
-      .to.throw(FefeError, 'Not one of foo, bar.')
-    expect(() => validate(true))
-      .to.throw(FefeError, 'Not one of foo, bar.')
+    expect(() => validate('baz')).to.throw(FefeError, 'Not one of foo, bar.')
+    expect(() => validate(true)).to.throw(FefeError, 'Not one of foo, bar.')
   })
 
   it('return a valid value', () => {

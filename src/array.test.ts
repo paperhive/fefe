@@ -27,7 +27,10 @@ describe('array()', () => {
   })
 
   it('should return a valid array with transformed values', () => {
-    const validate = array(value => `transformed: ${string()(value)}`)
-    expect(validate(['foo', 'bar'])).to.eql(['transformed: foo', 'transformed: bar'])
+    const validate = array((value) => `transformed: ${string()(value)}`)
+    expect(validate(['foo', 'bar'])).to.eql([
+      'transformed: foo',
+      'transformed: bar',
+    ])
   })
 })
