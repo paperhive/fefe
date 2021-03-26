@@ -2,7 +2,7 @@
 
 [![npm version](https://badge.fury.io/js/fefe.svg)](https://badge.fury.io/js/fefe)
 [![Test status](https://github.com/paperhive/fefe/actions/workflows/test.yaml/badge.svg)](https://github.com/paperhive/fefe/actions/workflows/test.yaml)
-[![codecov](https://codecov.io/gh/paperhive/fefe/branch/master/graph/badge.svg)](https://codecov.io/gh/paperhive/fefe)
+[![codecov](https://codecov.io/gh/paperhive/fefe/branch/main/graph/badge.svg?token=OZcHEYFYrQ)](https://codecov.io/gh/paperhive/fefe)
 
 Validate, sanitize and transform values with proper TypeScript types and with zero dependencies.
 
