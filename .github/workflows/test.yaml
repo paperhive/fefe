@@ -18,5 +18,5 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run test-cover
-      - run: npm run test-cover-submit
+      - uses: codecov/codecov-action@v1
       - run: npm run build
