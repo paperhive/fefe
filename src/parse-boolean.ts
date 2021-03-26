@@ -1,7 +1,7 @@
 import { FefeError } from './errors'
 
-export function parseBoolean () {
-  return (value: unknown) => {
+export function parseBoolean() {
+  return (value: unknown): boolean => {
     // tslint:disable-next-line:strict-type-predicates
     if (typeof value !== 'string') throw new FefeError(value, 'Not a string.')
     switch (value) {

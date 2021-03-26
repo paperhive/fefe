@@ -5,8 +5,7 @@ import { parseJson } from './parse-json'
 
 describe('parseJson()', () => {
   it('should throw if not JSON', () => {
-    expect(() => parseJson()('{foo}'))
-      .to.throw(FefeError, 'Invalid JSON')
+    expect(() => parseJson()('{foo}')).to.throw(FefeError, 'Invalid JSON')
   })
 
   it('return parsed JSON', () => {
