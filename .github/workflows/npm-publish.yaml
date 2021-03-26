@@ -1,0 +1,33 @@
+name: Publish releases to npm
+
+# based on https://dev.to/michi/publish-to-npm-automatically-with-github-actions-5805
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    name: 'Build, test and publish'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.release.target_commitish }}
+      - name: Setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: git config --global user.name "GitHub CD bot"
+      - run: git config --global user.email "github-cd-bot@ems.press"
+      - run: npm version ${{ github.event.release.tag_name }}
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTOMATION_TOKEN }}
+      - run: git push
+        env:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
