@@ -1,9 +1,9 @@
+import { partitionMapWithIndex, traverseWithIndex } from 'fp-ts/lib/Array'
+import { either, isLeft, left } from 'fp-ts/Either'
+
 import { branchError, leafError } from './errors'
 import { failure, isFailure, success } from './result'
 import { Validator2 } from './validate'
-
-import { partitionMapWithIndex, traverseWithIndex } from 'fp-ts/lib/Array'
-import { either, isLeft, left } from 'fp-ts/Either'
 
 export interface ArrayOptions {
   minLength?: number

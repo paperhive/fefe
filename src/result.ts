@@ -1,5 +1,5 @@
-import { Either, left, right } from 'fp-ts/lib/Either'
-import { isLeft, isRight } from 'fp-ts/lib/These'
+import { Either, isLeft, isRight, left, right } from 'fp-ts/lib/Either'
+
 import { FefeError2 } from './errors'
 
 export type Result<T> = Either<FefeError2, T>

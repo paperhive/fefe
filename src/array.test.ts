@@ -1,36 +1,62 @@
-import { expect } from 'chai'
+import { assert } from 'chai'
+import { chain } from 'fp-ts/lib/Either'
+import { flow } from 'fp-ts/lib/function'
 
-import { FefeError } from './errors'
+import { branchError, leafError } from './errors'
 import { array } from './array'
-import { string } from './string'
+import { boolean } from './boolean'
+import { failure, success } from './result'
 
 describe('array()', () => {
-  it('should throw if not a array', () => {
-    const validate = array(string())
-    expect(() => validate('foo'))
-      .to.throw(FefeError, 'Not an array.')
-      .that.deep.include({ value: 'foo', path: [], child: undefined })
+  it('should return error if not a array', () => {
+    assert.deepStrictEqual(
+      array(boolean())('foo'),
+      failure(leafError('foo', 'Not an array.'))
+    )
   })
 
-  it('should throw if nested validation fails', () => {
-    const validate = array(string())
-    const value = ['foo', 1]
-    expect(() => validate(value))
-      .to.throw(FefeError, 'Not a string.')
-      .that.deep.include({ value, path: [1] })
+  it('should return error if nested validation fails', () => {
+    assert.deepStrictEqual(
+      array(boolean())([true, 42]),
+      failure(
+        branchError(
+          [true, 42],
+          [{ key: 1, error: leafError(42, 'Not a boolean.') }]
+        )
+      )
+    )
+  })
+
+  it('should return all errors if nested validation fails', () => {
+    assert.deepStrictEqual(
+      array(boolean(), { allErrors: true })([true, 42, 1337]),
+      failure(
+        branchError(
+          [true, 42, 1337],
+          [
+            { key: 1, error: leafError(42, 'Not a boolean.') },
+            { key: 2, error: leafError(1337, 'Not a boolean.') },
+          ]
+        )
+      )
+    )
   })
 
   it('should return a valid array', () => {
-    const validate = array(string())
-    const value = ['foo', 'bar']
-    expect(validate(value)).to.eql(value)
+    const value = [true, false]
+    assert.deepStrictEqual(array(boolean())(value), success(value))
   })
 
   it('should return a valid array with transformed values', () => {
-    const validate = array((value) => `transformed: ${string()(value)}`)
-    expect(validate(['foo', 'bar'])).to.eql([
-      'transformed: foo',
-      'transformed: bar',
-    ])
+    const transform = array(
+      flow(
+        boolean(),
+        chain((v: boolean) => success(`transformed: ${v}`))
+      )
+    )
+    assert.deepStrictEqual(
+      transform([false, true]),
+      success(['transformed: false', 'transformed: true'])
+    )
   })
 })
