@@ -68,5 +68,8 @@
     "*.ts": [
       "eslint --fix"
     ]
+  },
+  "dependencies": {
+    "fp-ts": "^2.9.5"
   }
 }
