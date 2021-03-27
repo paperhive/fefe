@@ -1,37 +1,39 @@
-import { expect } from 'chai'
+import { assert } from 'chai'
 
-import { FefeError } from './errors'
+import { leafError } from './errors'
 import { string } from './string'
+import { failure, success } from './result'
 
 describe('string()', () => {
-  it('should throw if not a string', () => {
-    expect(() => string()(1)).to.throw(FefeError, 'Not a string.')
+  it('should return an error if not a string', () => {
+    assert.deepStrictEqual(string()(1), failure(leafError(1, 'Not a string.')))
   })
 
-  it('should throw if shorter than minLength', () => {
-    expect(() => string({ minLength: 4 })('foo')).to.throw(
-      FefeError,
-      'Shorter than 4 characters.'
+  it('should return an error if shorter than minLength', () => {
+    assert.deepStrictEqual(
+      string({ minLength: 4 })('foo'),
+      failure(leafError('foo', 'Shorter than 4 characters.'))
     )
   })
 
-  it('should throw if longer than maxLength', () => {
-    expect(() => string({ maxLength: 2 })('foo')).to.throw(
-      FefeError,
-      'Longer than 2 characters.'
+  it('should return an error if longer than maxLength', () => {
+    assert.deepStrictEqual(
+      string({ maxLength: 2 })('foo'),
+      failure(leafError('foo', 'Longer than 2 characters.'))
     )
   })
 
-  it('should throw if does not match regex', () => {
-    expect(() => string({ regex: /foo/ })('bar')).to.throw(
-      FefeError,
-      'Does not match regex.'
+  it('should return an error if does not match regex', () => {
+    assert.deepStrictEqual(
+      string({ regex: /foo/ })('bar'),
+      failure(leafError('bar', 'Does not match regex.'))
     )
   })
 
   it('return a valid string', () => {
-    expect(
-      string({ minLength: 2, maxLength: 4, regex: /foo/ })('foo')
-    ).to.equal('foo')
+    assert.deepStrictEqual(
+      string({ minLength: 2, maxLength: 4, regex: /foo/ })('foo'),
+      success('foo')
+    )
   })
 })
