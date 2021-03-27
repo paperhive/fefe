@@ -14,7 +14,7 @@ export interface LeafError {
 export interface BranchError {
   type: 'branch'
   value: unknown
-  children: ChildError2[]
+  childErrors: ChildError2[]
 }
 
 export type FefeError2 = LeafError | BranchError
@@ -27,7 +27,7 @@ export function branchError(
   value: unknown,
   children: ChildError2[]
 ): BranchError {
-  return { type: 'branch', value, children }
+  return { type: 'branch', value, childErrors: children }
 }
 
 export type LeafErrorReason = { path: Key[]; reason: string }
@@ -35,7 +35,7 @@ export type LeafErrorReason = { path: Key[]; reason: string }
 export function getLeafErrorReasons(error: FefeError2): LeafErrorReason[] {
   if (error.type === 'leaf') return [{ path: [], reason: error.reason }]
 
-  return error.children.flatMap((child) => {
+  return error.childErrors.flatMap((child) => {
     return getLeafErrorReasons(child.error).map((leafErrorReason) => ({
       path: [child.key, ...leafErrorReason.path],
       reason: leafErrorReason.reason,

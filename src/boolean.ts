@@ -1,11 +1,11 @@
-import { Either, left, right } from 'fp-ts/lib/Either'
-import { leafError, FefeError2 } from './errors'
+import { leafError } from './errors'
+import { failure, success } from './result'
+import { Validator2 } from './validate'
 
-export function boolean() {
-  return (value: unknown): Either<FefeError2, boolean> => {
-    // tslint:disable-next-line:strict-type-predicates
+export function boolean(): Validator2<boolean> {
+  return (value: unknown) => {
     if (typeof value !== 'boolean')
-      return left(leafError(value, 'Not a boolean.'))
-    return right(value)
+      return failure(leafError(value, 'Not a boolean.'))
+    return success(value)
   }
 }
