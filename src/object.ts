@@ -6,9 +6,9 @@ import { Validator2, Validator2ReturnType } from './validate'
 
 export type ObjectDefinition = Record<string, Validator2<unknown>>
 
-type FilterObject<T, C> = { [k in keyof T]: T[k] extends C ? k : never }
+type FilterObject<T, C> = { [k in keyof T]: C extends T[k] ? k : never }
 type MatchingKeys<T, C> = FilterObject<T, C>[keyof T]
-type NotFilterObject<T, C> = { [k in keyof T]: T[k] extends C ? never : k }
+type NotFilterObject<T, C> = { [k in keyof T]: C extends T[k] ? never : k }
 type NonMatchingKeys<T, C> = NotFilterObject<T, C>[keyof T]
 
 type MandatoryKeys<D> = NonMatchingKeys<D, Validator2<undefined>>
