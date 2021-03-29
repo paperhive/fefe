@@ -3,9 +3,9 @@ import { either, Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/function'
 import { branchError, ChildError2, leafError } from './errors'
 import { failure, isFailure, success } from './result'
-import { Validator2, Validator2ReturnType } from './validate'
+import { Validator, ValidatorReturnType } from './validate'
 
-export type ObjectValueValidator = Validator2<unknown> & { optional?: boolean }
+export type ObjectValueValidator = Validator<unknown> & { optional?: boolean }
 export type ObjectDefinition = Record<string, ObjectValueValidator>
 
 type FilterObject<T, C> = { [k in keyof T]: T[k] extends C ? k : never }
@@ -17,9 +17,9 @@ type MandatoryKeys<D> = NonMatchingKeys<D, { optional: true }>
 type OptionalKeys<D> = MatchingKeys<D, { optional: true }>
 
 export type ObjectResult<D> = {
-  [k in MandatoryKeys<D>]: Validator2ReturnType<D[k]>
+  [k in MandatoryKeys<D>]: ValidatorReturnType<D[k]>
 } &
-  { [k in OptionalKeys<D>]?: Validator2ReturnType<D[k]> }
+  { [k in OptionalKeys<D>]?: ValidatorReturnType<D[k]> }
 
 export interface ObjectOptions {
   allowExcessProperties?: boolean
@@ -33,12 +33,12 @@ type ValidatedEntry<K, T> =
 export function object<D extends ObjectDefinition>(
   definition: D,
   { allowExcessProperties = false, allErrors = false }: ObjectOptions = {}
-): Validator2<ObjectResult<D>> {
+): Validator<ObjectResult<D>> {
   function getEntryValidator(value: Record<string | number | symbol, unknown>) {
     return <K extends keyof D>([key, validator]: [
       K,
       ObjectValueValidator
-    ]): Either<ChildError2, ValidatedEntry<K, Validator2ReturnType<D[K]>>> => {
+    ]): Either<ChildError2, ValidatedEntry<K, ValidatorReturnType<D[K]>>> => {
       if (validator.optional && (!(key in value) || value[key] === undefined))
         return right({ type: 'optional', key })
       const result = validator(value[key])
@@ -46,23 +46,23 @@ export function object<D extends ObjectDefinition>(
       return right({
         type: 'mandatory',
         key,
-        value: result.right as Validator2ReturnType<D[K]>,
+        value: result.right as ValidatorReturnType<D[K]>,
       })
     }
   }
 
   function createObjectFromEntries(
-    entries: ValidatedEntry<keyof D, Validator2ReturnType<D[keyof D]>>[]
+    entries: ValidatedEntry<keyof D, ValidatorReturnType<D[keyof D]>>[]
   ) {
     return pipe(
       entries,
       partitionMap(
-        (entry: ValidatedEntry<keyof D, Validator2ReturnType<D[keyof D]>>) =>
+        (entry: ValidatedEntry<keyof D, ValidatorReturnType<D[keyof D]>>) =>
           entry.type === 'optional'
             ? left(entry.key)
             : right([entry.key, entry.value] as [
                 keyof D,
-                Validator2ReturnType<D[keyof D]>
+                ValidatorReturnType<D[keyof D]>
               ])
       ),
       ({ right }) => Object.fromEntries(right) as ObjectResult<D>
@@ -105,9 +105,9 @@ export function object<D extends ObjectDefinition>(
 }
 
 export function defaultTo<T, D>(
-  validator: Validator2<T>,
+  validator: Validator<T>,
   _default: D | (() => D)
-): Validator2<T | D> {
+): Validator<T | D> {
   return (value: unknown) => {
     if (value !== undefined) return validator(value)
     return success(_default instanceof Function ? _default() : _default)
@@ -115,9 +115,9 @@ export function defaultTo<T, D>(
 }
 
 export function optional<T>(
-  validator: Validator2<T>
-): Validator2<T> & { optional: true } {
-  const validate = ((v: unknown) => validator(v)) as Validator2<T> & {
+  validator: Validator<T>
+): Validator<T> & { optional: true } {
+  const validate = ((v: unknown) => validator(v)) as Validator<T> & {
     optional: true
   }
   validate.optional = true

@@ -1,10 +1,10 @@
 import { leafError } from './errors'
 import { failure, success } from './result'
-import { Validator2 } from './validate'
+import { Validator } from './validate'
 
 export function enumerate<T extends (string | number)[]>(
   ...args: T
-): Validator2<T[number]> {
+): Validator<T[number]> {
   return (value: unknown) => {
     if (args.indexOf(value as T[number]) === -1)
       return failure(leafError(value, `Not one of ${args.join(', ')}.`))

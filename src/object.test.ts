@@ -4,7 +4,7 @@ import { object, defaultTo, optional } from './object'
 import { string } from './string'
 import { branchError, leafError } from './errors'
 import { failure, success } from './result'
-import { Validator2 } from './validate'
+import { Validator } from './validate'
 
 describe('object()', () => {
   it('should return an error if value is not an object', () =>
@@ -43,7 +43,7 @@ describe('object()', () => {
   })
 
   it('should validate an object with optional key', () => {
-    const validate: Validator2<{ foo?: string }> = object({
+    const validate: Validator<{ foo?: string }> = object({
       foo: optional(string()),
     })
     assert.deepStrictEqual(validate({ foo: 'bar' }), success({ foo: 'bar' }))

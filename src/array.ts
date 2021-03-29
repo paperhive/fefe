@@ -3,7 +3,7 @@ import { either, isLeft, left } from 'fp-ts/Either'
 
 import { branchError, leafError } from './errors'
 import { failure, isFailure, success } from './result'
-import { Validator2 } from './validate'
+import { Validator } from './validate'
 
 export interface ArrayOptions {
   minLength?: number
@@ -12,9 +12,9 @@ export interface ArrayOptions {
 }
 
 export function array<R>(
-  elementValidator: Validator2<R>,
+  elementValidator: Validator<R>,
   { minLength, maxLength, allErrors }: ArrayOptions = {}
-): Validator2<R[]> {
+): Validator<R[]> {
   const validate = (index: number, element: unknown) => {
     const result = elementValidator(element)
     if (isFailure(result)) return left({ key: index, error: result.left })

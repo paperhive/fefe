@@ -6,7 +6,7 @@ import * as fefe from '.'
 
 import { branchError, leafError } from './errors'
 import { failure, success } from './result'
-import { Validator2ReturnType } from './validate'
+import { ValidatorReturnType } from './validate'
 
 describe('Integration tests', () => {
   describe('Basic validation', () => {
@@ -24,7 +24,7 @@ describe('Integration tests', () => {
       notifications: fefe.enumerate('immediately', 'daily', 'never'),
     })
 
-    type Person = Validator2ReturnType<typeof validatePerson>
+    type Person = ValidatorReturnType<typeof validatePerson>
 
     const validPerson: Person = {
       name: 'André',
@@ -135,7 +135,7 @@ describe('Integration tests', () => {
       ),
     })
 
-    type Config = Validator2ReturnType<typeof parseConfig>
+    type Config = ValidatorReturnType<typeof parseConfig>
 
     const validConfig: Config = {
       gcloudCredentials: { key: 'secret' },

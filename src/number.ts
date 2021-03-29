@@ -1,6 +1,6 @@
 import { leafError } from './errors'
 import { failure, success } from './result'
-import { Validator2 } from './validate'
+import { Validator } from './validate'
 
 export interface NumberOptions {
   min?: number
@@ -16,7 +16,7 @@ export function number({
   integer,
   allowNaN = false,
   allowInfinity = false,
-}: NumberOptions = {}): Validator2<number> {
+}: NumberOptions = {}): Validator<number> {
   return (value: unknown) => {
     if (typeof value !== 'number')
       return failure(leafError(value, 'Not a number.'))

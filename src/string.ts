@@ -1,6 +1,6 @@
 import { leafError } from './errors'
 import { failure, success } from './result'
-import { Validator2 } from './validate'
+import { Validator } from './validate'
 
 export interface StringOptions {
   minLength?: number
@@ -12,7 +12,7 @@ export function string({
   minLength,
   maxLength,
   regex,
-}: StringOptions = {}): Validator2<string> {
+}: StringOptions = {}): Validator<string> {
   return (value: unknown) => {
     // tslint:disable-next-line:strict-type-predicates
     if (typeof value !== 'string')
