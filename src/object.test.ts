@@ -13,6 +13,14 @@ describe('object()', () => {
       failure(leafError(null, 'Not an object.'))
     ))
 
+  it('should return an error if object has non-allowed key', () => {
+    const value = { foo: 'test', bar: true }
+    assert.deepStrictEqual(
+      object({ foo: string() })(value),
+      failure(leafError(value, 'Properties not allowed: bar.'))
+    )
+  })
+
   it('should return an error if object has a missing key', () => {
     const value = {}
     assert.deepStrictEqual(
