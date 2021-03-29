@@ -46,7 +46,7 @@ describe('object()', () => {
     )
   })
 
-  it('should return all errors if object has two value that do not validate', () => {
+  it('should return all errors if requested and object has two value that do not validate', () => {
     const value = { foo: 1337, bar: 'test' }
     assert.deepStrictEqual(
       object({ foo: string(), bar: number() }, { allErrors: true })(value),
@@ -62,6 +62,14 @@ describe('object()', () => {
   it('should validate an object', () => {
     const value = { foo: 'bar' }
     assert.deepStrictEqual(object({ foo: string() })(value), success(value))
+  })
+
+  it('should validate an object with allErrors', () => {
+    const value = { foo: 'bar' }
+    assert.deepStrictEqual(
+      object({ foo: string() }, { allErrors: true })(value),
+      success(value)
+    )
   })
 
   it('should validate an object with optional key', () => {
