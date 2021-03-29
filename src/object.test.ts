@@ -4,6 +4,7 @@ import { object, defaultTo, optional } from './object'
 import { string } from './string'
 import { branchError, leafError } from './errors'
 import { failure, success } from './result'
+import { Validator2 } from './validate'
 
 describe('object()', () => {
   it('should return an error if value is not an object', () =>
@@ -42,10 +43,14 @@ describe('object()', () => {
   })
 
   it('should validate an object with optional key', () => {
-    const validate = object({ foo: optional(string()) })
+    const validate: Validator2<{ foo?: string }> = object({
+      foo: optional(string()),
+    })
     assert.deepStrictEqual(validate({ foo: 'bar' }), success({ foo: 'bar' }))
     assert.deepStrictEqual(validate({}), success({}))
+    assert.notProperty(validate({}), 'foo')
     assert.deepStrictEqual(validate({ foo: undefined }), success({}))
+    assert.notProperty(validate({ foo: undefined }), 'foo')
   })
 
   it('should validate an object with default value', () => {
@@ -86,7 +91,4 @@ describe('optional()', () => {
       validate(42),
       failure(leafError(42, 'Not a string.'))
     ))
-
-  it('should return undefined if no value is provided', () =>
-    assert.deepStrictEqual(validate(undefined), success(undefined)))
 })
