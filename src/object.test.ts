@@ -5,6 +5,7 @@ import { string } from './string'
 import { branchError, leafError } from './errors'
 import { failure, success } from './result'
 import { Validator } from './validate'
+import { number } from './number'
 
 describe('object()', () => {
   it('should return an error if value is not an object', () =>
@@ -33,13 +34,26 @@ describe('object()', () => {
     )
   })
 
-  it('should return an error if object has a value does not validate', () => {
+  it('should return an error if object has a value that does not validate', () => {
     const value = { foo: 1337 }
     assert.deepStrictEqual(
       object({ foo: string() })(value),
       failure(
         branchError(value, [
           { key: 'foo', error: leafError(1337, 'Not a string.') },
+        ])
+      )
+    )
+  })
+
+  it('should return all errors if object has two value that do not validate', () => {
+    const value = { foo: 1337, bar: 'test' }
+    assert.deepStrictEqual(
+      object({ foo: string(), bar: number() }, { allErrors: true })(value),
+      failure(
+        branchError(value, [
+          { key: 'foo', error: leafError(1337, 'Not a string.') },
+          { key: 'bar', error: leafError('test', 'Not a number.') },
         ])
       )
     )
