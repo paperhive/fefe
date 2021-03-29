@@ -81,7 +81,7 @@ export function object<D extends ObjectDefinition>(
         return failure(
           leafError(
             value,
-            `Properties not allowed: ${excessProperties.join(', ')}`
+            `Properties not allowed: ${excessProperties.join(', ')}.`
           )
         )
     }
