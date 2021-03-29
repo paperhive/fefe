@@ -5,7 +5,7 @@ import { failure, success } from './result'
 import { parseNumber } from './parse-number'
 
 describe('parseNumber()', () => {
-  it('should throw if not a number', () =>
+  it('should return an error if not a number', () =>
     assert.deepStrictEqual(
       parseNumber()('foo'),
       failure(leafError('foo', 'Not a number.'))

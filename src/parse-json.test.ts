@@ -5,7 +5,7 @@ import { failure, success } from './result'
 import { parseJson } from './parse-json'
 
 describe('parseJson()', () => {
-  it('should throw if not JSON', () =>
+  it('should return an error if not JSON', () =>
     assert.deepStrictEqual(
       parseJson()('foo'),
       failure(
