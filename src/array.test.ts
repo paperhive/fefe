@@ -47,6 +47,14 @@ describe('array()', () => {
     assert.deepStrictEqual(array(boolean())(value), success(value))
   })
 
+  it('should return a valid array with allErrors', () => {
+    const value = [true, false]
+    assert.deepStrictEqual(
+      array(boolean(), { allErrors: true })(value),
+      success(value)
+    )
+  })
+
   it('should return a valid array with transformed values', () => {
     const transform = array(
       flow(
