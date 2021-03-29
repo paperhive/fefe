@@ -1,15 +1,18 @@
-import { FefeError } from './errors'
+import { leafError } from './errors'
+import { failure, success } from './result'
+import { Transformer } from './validate'
 
 const isoDateRegex = /^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d(\.\d+)?([+-][0-2]\d:[0-5]\d|Z)$/
 
-export function parseDate({ iso = false }: { iso?: boolean } = {}) {
-  return (value: unknown): Date => {
-    // tslint:disable-next-line:strict-type-predicates
-    if (typeof value !== 'string') throw new FefeError(value, 'Not a string.')
+export function parseDate({ iso = false }: { iso?: boolean } = {}): Transformer<
+  string,
+  Date
+> {
+  return (value: string) => {
     if (iso && !isoDateRegex.test(value))
-      throw new FefeError(value, 'Not an ISO 8601 date string.')
+      return failure(leafError(value, 'Not an ISO 8601 date string.'))
     const time = Date.parse(value)
-    if (Number.isNaN(time)) throw new FefeError(value, 'Not a date.')
-    return new Date(time)
+    if (Number.isNaN(time)) return failure(leafError(value, 'Not a date.'))
+    return success(new Date(time))
   }
 }

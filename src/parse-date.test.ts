@@ -1,29 +1,33 @@
-import { expect } from 'chai'
+import { assert } from 'chai'
 
-import { FefeError } from './errors'
+import { leafError } from './errors'
+import { failure, success } from './result'
 import { parseDate } from './parse-date'
 
 describe('parseDate()', () => {
-  it('should throw if not a date', () => {
-    expect(() => parseDate()('foo')).to.throw(FefeError, 'Not a date.')
-  })
+  it('should return an error if not a date', () =>
+    assert.deepStrictEqual(
+      parseDate()('foo'),
+      failure(leafError('foo', 'Not a date.'))
+    ))
 
-  it('should throw if not an ISO date string', () => {
-    expect(() => parseDate({ iso: true })('2018-10-22T09:40:40')).to.throw(
-      FefeError,
-      'Not an ISO 8601 date string.'
+  it('should return an error if not an ISO date string', () => {
+    const value = '2018-10-22T09:40:40'
+    assert.deepStrictEqual(
+      parseDate({ iso: true })(value),
+      failure(leafError(value, 'Not an ISO 8601 date string.'))
     )
   })
 
   it('should parse an ISO date string without milliseconds', () => {
-    const date = '2018-10-22T09:40:40Z'
-    const parsedDate = parseDate({ iso: true })(date)
-    expect(parsedDate.getTime()).to.equal(new Date(date).getTime())
+    const value = '2018-10-22T09:40:40Z'
+    const parsedDate = parseDate({ iso: true })(value)
+    assert.deepStrictEqual(parsedDate, success(new Date(value)))
   })
 
   it('return parsed date', () => {
     const date = new Date()
     const parsedDate = parseDate({ iso: true })(date.toISOString())
-    expect(parsedDate.getTime()).to.equal(date.getTime())
+    assert.deepStrictEqual(parsedDate, success(date))
   })
 })

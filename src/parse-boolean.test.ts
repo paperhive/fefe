@@ -1,15 +1,18 @@
-import { expect } from 'chai'
+import { assert } from 'chai'
 
-import { FefeError } from './errors'
+import { leafError } from './errors'
+import { failure, success } from './result'
 import { parseBoolean } from './parse-boolean'
 
 describe('parseBoolean()', () => {
-  it('should throw if not a boolean', () => {
-    expect(() => parseBoolean()('foo')).to.throw(FefeError, 'Not a boolean.')
-  })
+  it('should return an error if not a boolean', () =>
+    assert.deepStrictEqual(
+      parseBoolean()('foo'),
+      failure(leafError('foo', 'Not a boolean.'))
+    ))
 
   it('return parsed boolean', () => {
-    expect(parseBoolean()('true')).to.equal(true)
-    expect(parseBoolean()('false')).to.equal(false)
+    assert.deepStrictEqual(parseBoolean()('true'), success(true))
+    assert.deepStrictEqual(parseBoolean()('false'), success(false))
   })
 })

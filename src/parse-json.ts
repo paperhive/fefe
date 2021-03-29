@@ -1,13 +1,13 @@
-import { FefeError } from './errors'
+import { leafError } from './errors'
+import { failure, success } from './result'
+import { Transformer } from './validate'
 
-export function parseJson() {
-  return (value: unknown): unknown => {
-    // tslint:disable-next-line:strict-type-predicates
-    if (typeof value !== 'string') throw new FefeError(value, 'Not a string.')
+export function parseJson(): Transformer<string, unknown> {
+  return (value: string) => {
     try {
-      return JSON.parse(value)
+      return success(JSON.parse(value))
     } catch (error) {
-      throw new FefeError(value, `Invalid JSON: ${error.message}.`)
+      return failure(leafError(value, `Invalid JSON: ${error.message}.`))
     }
   }
 }

@@ -1,12 +1,16 @@
-import { expect } from 'chai'
+import { assert } from 'chai'
 
-import { FefeError } from './errors'
+import { leafError } from './errors'
+import { failure, success } from './result'
 import { parseNumber } from './parse-number'
 
 describe('parseNumber()', () => {
-  it('should throw if not a number', () => {
-    expect(() => parseNumber()('foo')).to.throw(FefeError, 'Not a number.')
-  })
+  it('should throw if not a number', () =>
+    assert.deepStrictEqual(
+      parseNumber()('foo'),
+      failure(leafError('foo', 'Not a number.'))
+    ))
 
-  it('return parsed number', () => expect(parseNumber()('0.5')).to.equal(0.5))
+  it('return parsed number', () =>
+    assert.deepStrictEqual(parseNumber()('0.5'), success(0.5)))
 })
