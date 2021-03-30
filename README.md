@@ -4,12 +4,13 @@
 [![Test status](https://github.com/paperhive/fefe/actions/workflows/test.yaml/badge.svg)](https://github.com/paperhive/fefe/actions/workflows/test.yaml)
 [![codecov](https://codecov.io/gh/paperhive/fefe/branch/main/graph/badge.svg?token=OZcHEYFYrQ)](https://codecov.io/gh/paperhive/fefe)
 
-Validate, sanitize and transform values with proper TypeScript types and with zero dependencies.
+Validate, sanitize and transform values with proper TypeScript types and with a single dependency ([fp-ts](https://www.npmjs.com/package/fp-ts)).
 
 **🔎&nbsp;&nbsp;Validation:** checks a value (example: check if value is string)<br/>
 **:nut_and_bolt:&nbsp;&nbsp;Sanitization:** if a value is not valid, try to transform it (example: transform value to `Date`)<br/>
 **🛠️&nbsp;&nbsp;Transformation:** transforms a value (example: parse JSON)<br/>
-**🔌&nbsp;&nbsp;Everything is a function**: functional approach makes it easy to extend – just plug in your own function anywhere!
+**🔌&nbsp;&nbsp;Everything is a function**: functional approach makes it easy to extend – just plug in your own function anywhere!<br/>
+**↔️&nbsp;&nbsp;Based on `Either`:** explicit and type-safe error handling – `left` path is a (typed!) error, `right` path is a valid value (see below).
 
 ## Installation
 
@@ -19,44 +20,50 @@ npm install fefe
 
 ## Usage
 
+The
+
 ### 🔎 Validation example
 
-Validation only checks the provided value and returns it with proper types.
+Validation checks the provided value and returns it with proper types.
 
 ```typescript
 import { object, string } from 'fefe'
 
 const validatePerson = object({ name: string() })
 
-// result is of type { name: string }
-const person = validatePerson({ name: 'Leia' })
+const result = validatePerson({ name: 'Leia' })
+if (isFailure(result)) {
+  return console.error(result.left)
 
-// throws FefeError because 'foo' is not a valid property
-validatePerson({ foo: 'bar' })
+// result is of type { name: string }
+const person = result.right
 ```
 
 ☝️ You can also use `fefe` to define your types easily:
 
 ```typescript
-type Person = ReturnType<typeof validatePerson> // { name: string }
+import { ValidatorReturnType } from 'fefe'
+type Person = ValidatorReturnType<typeof validatePerson> // { name: string }
 ```
 
 ### ⚙️ Basic transformation example
 
 #### Parse a value
 
-In this example a `string` needs to be parsed as a `Date`.
+In this example a `string` needs to be parsed as a `Date`. Chaining functions can be achieved by the standard functional tools like `flow` and `chain` in [fp-ts](https://www.npmjs.com/package/fp-ts).
 
 ```typescript
-import { object, parseDate, string } from 'fefe'
+import { object, parseDate, string, ValidatorReturnType } from 'fefe'
+import { chain } from 'fp-ts/lib/Either'
+import { flow } from 'fp-ts/lib/function'
 
 const sanitizeMovie = object({
   title: string(),
-  releasedAt: parseDate()
+  releasedAt: flow(string(), chain(parseDate()))
 })
 
 // { title: string, releasedAt: Date }
-type Movie = ReturnType<typeof sanitizeMovie>
+type Movie = ValidatorReturnType<typeof sanitizeMovie>
 
 const movie: Movie = sanitizeMovie({
   title: 'Star Wars',
@@ -64,36 +71,46 @@ const movie: Movie = sanitizeMovie({
 })
 ```
 
-Then `movie` equals `{ title: 'Star Wars', releasedAt: Date(1977-05-25T12:00:00.000Z) }` (`releasedAt` now is a date).
+Then `movie.right` equals `{ title: 'Star Wars', releasedAt: Date(1977-05-25T12:00:00.000Z) }` (`releasedAt` now is a date).
 
 #### Parse a value on demand (sanitize)
 
-Sometimes a value might already be of the right type. In the following example we use `union()` to create a sanitizer that returns a provided value if it is a Date already and parse it otherwise. If it can't be parsed either the function will throw:
+Sometimes a value might already be of the right type. In the following example we use `union()` to create a sanitizer that returns a provided value if it is a `Date` already and parse it otherwise. If it can't be parsed either the function will throw:
 
 ```typescript
 import { date, parseDate, union } from 'fefe'
+import { chain } from 'fp-ts/lib/Either'
+import { flow } from 'fp-ts/lib/function'
 
-const sanitizeDate = union(date(), parseDate())
+const sanitizeDate = union(
+  date(),
+  flow(string(), chain(parseDate()))
+)
 ```
 
 ### 🛠️ Complex transformation example
 
-This is a more complex example that can be applied to parsing environment variables or query string parameters. Note how easy it is to apply a chain of functions to validate and transform a value (here we use `ramda`).
+This is a more complex example that can be applied to parsing environment variables or query string parameters. Again, we use `flow` and `chain` to compose functions. Here, we also add a custom function that splits a string into an array.
 
 ```typescript
-import { object, parseJson, string } from 'fefe'
-import { pipe } from 'ramda'
+import { object, parseJson, string, success } from 'fefe'
+import { chain } from 'fp-ts/lib/Either'
+import { flow } from 'fp-ts/lib/function'
 
 const parseConfig = object({
-  gcloudCredentials: pipe(
-    parseJson(),
-    object({ secret: string() })
+  gcloudCredentials: flow(
+    string()
+    chain(parseJson()),
+    chain(object({ secret: string() }))
   ),
-  whitelist: pipe(string(), secret => str.split(','))
+  whitelist: flow(
+    string(),
+    chain(secret => success(str.split(',')))
+  )
 })
 
 // { gcloudCredentials: { secret: string }, whitelist: string[] }
-type Config = ReturnType<typeof parseConfig>
+type Config = ValidatorReturnType<typeof parseConfig>
 
 const config: Config = parseConfig({
   gcloudCredentials: '{"secret":"foobar"}',
@@ -101,94 +118,170 @@ const config: Config = parseConfig({
 })
 ```
 
-Then `config` will equal `{ gcloudCredentials: { secret: 'foobar'}, whitelist: ['alice', 'bob'] }`.
+Then `config.right` will equal `{ gcloudCredentials: { secret: 'foobar'}, whitelist: ['alice', 'bob'] }`.
 
 ## Documentation
 
+### Transformer<T>
+
+A transformer is a function that accepts some value of type `V` (it could be `unknown`) and returns a type `T`:
+```typescript
+type Transform<T> = (v: V) => Result<T>
+```
+The result can either be a `FefeError` (see below) or the validated value as type `T`:
+```typescript
+type Result<T> = Either<FefeError, T>
+```
+
+`fefe` uses the `Either` pattern with types and functions from [fp-ts](https://www.npmjs.com/package/fp-ts). `Either` can either represent an error (the "left" path) or the successfully validated value (the "right" path). This results in type-safe errors and explicit error-handling. Example:
+
+```typescript
+import { isFailure } from 'fefe'
+
+const result: Result<string> = ...
+if (isFailure(result)) {
+  console.error(result.left)
+  process.exit(1)
+}
+const name = result.right
+```
+
+You may wonder why `fefe` does not just throw an error and the answer is:
+1. Throwing an error is a side-effect which goes against pure functional programming.
+2. Lack of type-safety: A thrown error can be anything and needs run-time checking before it can be used in a meaningful way.
+
+You can read more about it [here](https://medium.com/nmc-techblog/functional-error-handling-in-js-8b7f7e4fa092).
+
+
+
+### Validator<T>
+
+A validator is just a special (but common) case of a transformer where the input is `unknown`:
+
+```typescript
+type Validator<T> = Transformer<unknown, T>
+```
+
 ### `FefeError`
 
-`fefe` throws a `FefeError` if a value can't be validated/transformed. A `FefeError` has the following properties:
+`fefe` validators return a `FefeError` if a value can't be validated/transformed. Note that `FefeError` is *not* derived from the JavaScript `Error` object but is a simple object.
 
-* `reason`: the reason for the error.
-* `value`: the value that was passed.
-* `path`: the path in `value` to where the error occured.
+If an error occurs it will allow you to pinpoint where exactly the error(s) occured and why. The structure is the following:
 
-### `array(elementValidator, options?)`
+```typescript
+type FefeError = LeafError | BranchError
+```
 
-Returns a function `(value: unknown) => T[]` that checks that the given value is an array and that runs `elementValidator` on all elements. A new array with the results is returned.
+#### `LeafError`
+
+A `LeafError` can be seen as the source of an error which can happen deep in a nested object and it carries both the value that failed and a human-readable reason describing why it failed.
+
+```typescript
+interface LeafError {
+  type: 'leaf'
+  value: unknown
+  reason: string
+}
+```
+
+#### `BranchError`
+
+A `BranchError` is the encapsulation of one or more errors on a higher level.
+
+```typescript
+interface BranchError {
+  type: 'branch'
+  value: unknown
+  childErrors: ChildError[]
+}
+
+interface ChildError {
+  key: Key
+  error: FefeError
+}
+```
+
+Imagine an array of values where the values at position 2 and 5 fail. This would result in two `childErrors`: one with `key` equal to 2 and `key` equal to 5. The `error` property is again a `FefeError` so this is a full error tree.
+
+#### `getErrorString(error: FefeError): string`
+
+To simplify handling of errors, you can use `getErrorString()` which traverses the tree and returns a human-readable error message for each `LeafError` – along with the paths and reasons.
+
+Example error message: `user.id: Not a string.`
+
+### `array(elementValidator, options?): Validator<T[]>`
+
+Returns a validator that checks that the given value is an array and that runs `elementValidator` on all elements. A new array with the results is returned as `Result<T[]>`.
 
 Options:
-* `elementValidator`: validator function `(value: unknown) => T` that is applied to each element. The return values are returned as a new array.
-* `options.minLength?`, `options.maxLength?`: restrict length of array
+* `elementValidator: Validator<T>`: validator that is applied to each element. The return values are returned as a new array.
+* `options.minLength?: number`, `options.maxLength?: number`: restrict length of array
+* `options.allErrors?: boolean`: set to `true` to return all errors instead of only the first.
 
-### `boolean()`
+### `boolean(): Validator<boolean>`
 
-Returns a function `(value: unknown) => boolean` that returns `value` if it is a boolean and throws otherwise.
+Returns a validator that returns `value` if it is a boolean and returns an error otherwise.
 
-### `date(options?)`
+### `date(options?): Validator<Date>`
 
-Returns a function `(value: unknown) => Date` that returns `value` if it is a Date and throws otherwise.
-
-Options:
-* `options.min?`, `options.max?`: restrict date
-
-### `enumerate(value1, value2, ...)`
-
-Returns a function `(value: unknown) => value1 | value2 | ...` that returns `value` if if equals one of the strings `value1`, `value2`, .... and throws otherwise.
-
-### `number(options?)`
-
-Returns a function `(value: unknown) => number` that returns `value` if it is a number and throws otherwise.
+Returns a validator that returns `value` if it is a Date and returns an error otherwise.
 
 Options:
-* `options.min?`, `options.max?`: restrict number
-* `options.integer?`: require number to be an integer (default: `false`)
-* `options.allowNaN?`, `options.allowInfinity?`: allow `NaN` or `infinity` (default: `false`)
+* `options.min?: Date`, `options.max?: Date`: restrict date
 
-### `object(definition, options?)`
+### `enumerate(value1, value2, ...): Validator<value1 | value2 | ...>`
 
-Returns a function `(value: unknown) => {...}` that returns `value` if it is an object and all values pass the validation as specified in `definition`, otherwise it throws. A new object is returned that has the results of the validator functions as values.
+Returns a validator that returns `value` if if equals one of the strings `value1`, `value2`, .... and returns an error otherwise.
+
+### `number(options?): Validator<number>`
+
+Returns a validator that returns `value` if it is a number and returns an error otherwise.
 
 Options:
-* `definition`: an object where each value is either:
-   * a validator functions `(value: unknown) => T` or
-   * an object with the following properties:
-      * `validator`: validator function `(value: unknown) => T`
-      * `optional?`: allow undefined values (default: `false`)
-      * `default?`: default value of type `T` or function `() => T` that returns a default value
-* `allowExcessProperties?`: allow excess properties in `value` (default: `false`). Excess properties are not copied to the returned object.
+* `options.min?: number`, `options.max?: number`: restrict number
+* `options.integer?: boolean`: require number to be an integer (default: `false`)
+* `options.allowNaN?: boolean`, `options.allowInfinity?: boolean`: allow `NaN` or `infinity` (default: `false`)
+
+### `object(definition, options?): Validator<ObjectResult<D>>`
+
+Returns a validator that returns `value` if it is an object and all values pass the validation as specified in `definition`, otherwise it returns an error. A new object is returned that has the results of the validator functions as values.
+
+Options:
+* `definition: ObjectDefinition`: an object where each value is a `Validator<T>`.
+* `allowExcessProperties?: boolean`: allow excess properties in `value` (default: `false`). Excess properties are not copied to the returned object.
+* `allErrors?: boolean`: set to `true` to return all errors instead of only the first (default: `false`).
 
 You can use the following helpers:
-* `optional(validator)`: generates an optional key validator with the given `validator`.
-* `defaultTo(validator, default)`: generates a key validator that defaults to `default` (also see `default` option above).
+* `optional(validator: Validator<T>)`: generates an optional key validator with the given `validator`.
+* `defaultTo(validator: Validator<T>, default: D | () => D`: generates a validator that defaults to `default()` if it is a function and `default` otherwise.
 
-### `string(options?)`
+### `string(options?): Validator<string>`
 
-Returns a function `(value: unknown) => string` that returns `value` if it is a string and throws otherwise.
-
-Options:
-* `options.minLength?`, `options.maxLength?`: restrict length of string
-* `options.regex?`: require string to match regex
-
-### `union(validator1, validator2, ...)`
-
-Returns a function `(value: unknown) => return1 | return2 | ...` that returns the return value of the first validator called with `value` that does not throw. The function throws if all validators throw.
-
-### `parseBoolean()`
-
-Returns a function `(value: string) => boolean` that parses a string as a boolean.
-
-### `parseDate(options?)`
-
-Returns a function `(value: string) => Date` that parses a string as a date.
+Returns a validator that returns `value` if it is a string and returns an error otherwise.
 
 Options:
-* `options.iso?`: require value to be an ISO 8601 string.
+* `options.minLength?: number`, `options.maxLength?: number`: restrict length of string
+* `options.regex?: RegExp`: require string to match regex
 
-### `parseJson()`
+### `union(validator1, validator2, ...): Validator<A | B | ...>`
 
-Returns a function `(value: string) => any` that parses a JSON string.
+Returns a validator that returns the return value of the first validator called with `value` that does not return an error. The function returns an error if all validators return an error. All arguments are validators (e.g., `validator1: Validator<A>, validator2: Validator<B>, ...`)
 
-### `parseNumber()`
+### `parseBoolean(): Transformer<string, boolean>`
 
-Returns a function `(value: string) => number` that parses a number string.
+Returns a transformer that parses a string as a boolean.
+
+### `parseDate(options?): Transformer<string, Date>`
+
+Returns a transformer that parses a string as a date.
+
+Options:
+* `options.iso?: boolean`: require value to be an ISO 8601 string.
+
+### `parseJson(): Transformer<string, unknown>`
+
+Returns a transformer that parses a JSON string. Since parsed JSON can in turn be almost anything, it is usually combined with another validator like `object({ ... })`.
+
+### `parseNumber(): Transformer<string, number>`
+
+Returns a transformer that parses a number string.

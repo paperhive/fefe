@@ -4,10 +4,6 @@ import { flow } from 'fp-ts/lib/function'
 
 import * as fefe from '.'
 
-import { branchError, leafError } from './errors'
-import { failure, success } from './result'
-import { ValidatorReturnType } from './validate'
-
 describe('Integration tests', () => {
   describe('Basic validation', () => {
     const validatePerson = fefe.object({
@@ -24,7 +20,7 @@ describe('Integration tests', () => {
       notifications: fefe.enumerate('immediately', 'daily', 'never'),
     })
 
-    type Person = ValidatorReturnType<typeof validatePerson>
+    type Person = fefe.ValidatorReturnType<typeof validatePerson>
 
     const validPerson: Person = {
       name: 'André',
@@ -38,7 +34,10 @@ describe('Integration tests', () => {
     }
 
     it('validates a person', () =>
-      assert.deepStrictEqual(validatePerson(validPerson), success(validPerson)))
+      assert.deepStrictEqual(
+        validatePerson(validPerson),
+        fefe.success(validPerson)
+      ))
 
     it('returns an error if person is invalid', () => {
       const invalidPerson = {
@@ -47,12 +46,12 @@ describe('Integration tests', () => {
       }
       assert.deepStrictEqual(
         validatePerson(invalidPerson),
-        failure(
-          branchError(invalidPerson, [
+        fefe.failure(
+          fefe.branchError(invalidPerson, [
             {
               key: 'address',
-              error: branchError(invalidPerson.address, [
-                { key: 'zip', error: leafError('foo', 'Not a number.') },
+              error: fefe.branchError(invalidPerson.address, [
+                { key: 'zip', error: fefe.leafError('foo', 'Not a number.') },
               ]),
             },
           ])
@@ -74,7 +73,7 @@ describe('Integration tests', () => {
       })
       assert.deepStrictEqual(
         movie,
-        success({
+        fefe.success({
           title: 'Star Wars',
           releasedAt: new Date('1977-05-25T12:00:00.000Z'),
         })
@@ -85,11 +84,11 @@ describe('Integration tests', () => {
       const invalidMovie = { title: 'Star Wars', releasedAt: 'foo' }
       assert.deepStrictEqual(
         sanitizeMovie(invalidMovie),
-        failure(
-          branchError(invalidMovie, [
+        fefe.failure(
+          fefe.branchError(invalidMovie, [
             {
               key: 'releasedAt',
-              error: leafError('foo', 'Not a date.'),
+              error: fefe.leafError('foo', 'Not a date.'),
             },
           ])
         )
@@ -105,16 +104,19 @@ describe('Integration tests', () => {
     const date = new Date()
 
     it('returns a date', () =>
-      assert.deepStrictEqual(sanitizeDate(date), success(date)))
+      assert.deepStrictEqual(sanitizeDate(date), fefe.success(date)))
 
     it('returns a parsed date', () =>
-      assert.deepStrictEqual(sanitizeDate(date.toISOString()), success(date)))
+      assert.deepStrictEqual(
+        sanitizeDate(date.toISOString()),
+        fefe.success(date)
+      ))
 
     it('throws with an invalid date', () =>
       assert.deepStrictEqual(
         sanitizeDate('foo'),
-        failure(
-          leafError(
+        fefe.failure(
+          fefe.leafError(
             'foo',
             'Not of any expected type (Not a date. Not a date.).'
           )
@@ -131,11 +133,11 @@ describe('Integration tests', () => {
       ),
       whitelist: flow(
         fefe.string(),
-        chain((value) => success(value.split(',')))
+        chain((value) => fefe.success(value.split(',')))
       ),
     })
 
-    type Config = ValidatorReturnType<typeof parseConfig>
+    type Config = fefe.ValidatorReturnType<typeof parseConfig>
 
     const validConfig: Config = {
       gcloudCredentials: { key: 'secret' },
@@ -150,7 +152,7 @@ describe('Integration tests', () => {
     it('parses a config', () =>
       assert.deepStrictEqual(
         parseConfig(validConfigInput),
-        success(validConfig)
+        fefe.success(validConfig)
       ))
 
     it('throws with an invalid config', () => {
@@ -160,11 +162,11 @@ describe('Integration tests', () => {
       }
       assert.deepStrictEqual(
         parseConfig(invalidConfigInput),
-        failure(
-          branchError(invalidConfigInput, [
+        fefe.failure(
+          fefe.branchError(invalidConfigInput, [
             {
               key: 'gcloudCredentials',
-              error: leafError(
+              error: fefe.leafError(
                 { key: 'secret', foo: 'bar' },
                 'Properties not allowed: foo.'
               ),

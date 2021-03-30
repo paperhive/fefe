@@ -1,6 +1,7 @@
 export * from './errors'
-
+export * from './result'
 export * from './validate'
+
 export * from './array'
 export * from './boolean'
 export * from './date'
