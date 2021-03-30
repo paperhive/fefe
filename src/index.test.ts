@@ -1,5 +1,6 @@
-import { expect } from 'chai'
-import { pipe } from 'ramda'
+import { assert } from 'chai'
+import { chain } from 'fp-ts/lib/Either'
+import { flow } from 'fp-ts/lib/function'
 
 import * as fefe from '.'
 
@@ -12,48 +13,57 @@ describe('Integration tests', () => {
         street: fefe.string(),
         zip: fefe.number(),
       }),
-      isVerified: fefe.boolean(),
+      // isVerified: fefe.boolean(),
       verifiedAt: fefe.union(fefe.date(), fefe.enumerate('never')),
       joinedAt: fefe.date(),
       favoriteDishes: fefe.array(fefe.string()),
       notifications: fefe.enumerate('immediately', 'daily', 'never'),
     })
 
-    type Person = ReturnType<typeof validatePerson>
+    type Person = fefe.ValidatorReturnType<typeof validatePerson>
 
     const validPerson: Person = {
       name: 'André',
       age: 35,
       address: { street: 'Kreuzbergstr', zip: 10965 },
-      isVerified: true,
+      // isVerified: true,
       verifiedAt: 'never',
       joinedAt: new Date(),
       favoriteDishes: ['Pho Bo', 'Sushi'],
       notifications: 'daily',
     }
 
-    it('validates a person', () => {
-      const person = validatePerson(validPerson)
-      expect(person).to.eql(validPerson)
-    })
+    it('validates a person', () =>
+      assert.deepStrictEqual(
+        validatePerson(validPerson),
+        fefe.success(validPerson)
+      ))
 
-    it('throws with an invalid person', () => {
+    it('returns an error if person is invalid', () => {
       const invalidPerson = {
         ...validPerson,
         address: { street: 'Ackerstr', zip: 'foo' },
       }
-      expect(() => validatePerson(invalidPerson))
-        .to.throw(fefe.FefeError, 'address.zip: Not a number.')
-        .that.deep.include({ value: invalidPerson, path: ['address', 'zip'] })
-        .and.has.property('originalError')
-        .that.include({ value: 'foo' })
+      assert.deepStrictEqual(
+        validatePerson(invalidPerson),
+        fefe.failure(
+          fefe.branchError(invalidPerson, [
+            {
+              key: 'address',
+              error: fefe.branchError(invalidPerson.address, [
+                { key: 'zip', error: fefe.leafError('foo', 'Not a number.') },
+              ]),
+            },
+          ])
+        )
+      )
     })
   })
 
   describe('Basic transformation (sanitization)', () => {
     const sanitizeMovie = fefe.object({
       title: fefe.string(),
-      releasedAt: fefe.parseDate(),
+      releasedAt: flow(fefe.string(), chain(fefe.parseDate())),
     })
 
     it('validates a movie and parses the date string', () => {
@@ -61,54 +71,73 @@ describe('Integration tests', () => {
         title: 'Star Wars',
         releasedAt: '1977-05-25T12:00:00.000Z',
       })
-      expect(movie).to.eql({
-        title: 'Star Wars',
-        releasedAt: new Date('1977-05-25T12:00:00.000Z'),
-      })
+      assert.deepStrictEqual(
+        movie,
+        fefe.success({
+          title: 'Star Wars',
+          releasedAt: new Date('1977-05-25T12:00:00.000Z'),
+        })
+      )
     })
 
-    it('throws with an invalid date', () => {
+    it('returns error if date is invalid', () => {
       const invalidMovie = { title: 'Star Wars', releasedAt: 'foo' }
-      expect(() => sanitizeMovie(invalidMovie))
-        .to.throw(fefe.FefeError, 'releasedAt: Not a date.')
-        .that.deep.include({ value: invalidMovie, path: ['releasedAt'] })
-        .and.has.property('originalError')
-        .that.include({ value: 'foo' })
-    })
-  })
-
-  describe('Basic transformation (on-demand sanitization)', () => {
-    const sanitizeDate = fefe.union(fefe.date(), fefe.parseDate())
-    const date = new Date()
-
-    it('returns a date', () => {
-      const sanitizedDate: Date = sanitizeDate(date)
-      expect(sanitizedDate).to.equal(date)
-    })
-
-    it('returns a parsed date', () => {
-      const sanitizedDate: Date = sanitizeDate(date.toISOString())
-      expect(sanitizedDate).to.eql(date)
-    })
-
-    it('throws with an invalid date', () => {
-      expect(() => sanitizeDate('foo')).to.throw(
-        fefe.FefeError,
-        'Not of any expected type.'
+      assert.deepStrictEqual(
+        sanitizeMovie(invalidMovie),
+        fefe.failure(
+          fefe.branchError(invalidMovie, [
+            {
+              key: 'releasedAt',
+              error: fefe.leafError('foo', 'Not a date.'),
+            },
+          ])
+        )
       )
     })
   })
 
+  describe('Basic transformation (on-demand sanitization)', () => {
+    const sanitizeDate = fefe.union(
+      fefe.date(),
+      flow(fefe.string(), chain(fefe.parseDate()))
+    )
+    const date = new Date()
+
+    it('returns a date', () =>
+      assert.deepStrictEqual(sanitizeDate(date), fefe.success(date)))
+
+    it('returns a parsed date', () =>
+      assert.deepStrictEqual(
+        sanitizeDate(date.toISOString()),
+        fefe.success(date)
+      ))
+
+    it('throws with an invalid date', () =>
+      assert.deepStrictEqual(
+        sanitizeDate('foo'),
+        fefe.failure(
+          fefe.leafError(
+            'foo',
+            'Not of any expected type (Not a date. Not a date.).'
+          )
+        )
+      ))
+  })
+
   describe('Complex transformation and validation', () => {
     const parseConfig = fefe.object({
-      gcloudCredentials: pipe(
-        fefe.parseJson(),
-        fefe.object({ key: fefe.string() })
+      gcloudCredentials: flow(
+        fefe.string(),
+        chain(fefe.parseJson()),
+        chain(fefe.object({ key: fefe.string() }))
       ),
-      whitelist: pipe(fefe.string(), (value) => value.split(',')),
+      whitelist: flow(
+        fefe.string(),
+        chain((value) => fefe.success(value.split(',')))
+      ),
     })
 
-    type Config = ReturnType<typeof parseConfig>
+    type Config = fefe.ValidatorReturnType<typeof parseConfig>
 
     const validConfig: Config = {
       gcloudCredentials: { key: 'secret' },
@@ -120,27 +149,42 @@ describe('Integration tests', () => {
       whitelist: 'alice,bob',
     }
 
-    it('parses a config', () => {
-      const config = parseConfig(validConfigInput)
-      expect(config).to.eql(validConfig)
-    })
+    it('parses a config', () =>
+      assert.deepStrictEqual(
+        parseConfig(validConfigInput),
+        fefe.success(validConfig)
+      ))
 
     it('throws with an invalid config', () => {
       const invalidConfigInput = {
         ...validConfigInput,
         gcloudCredentials: '{ "key": "secret", "foo": "bar" }',
       }
-      expect(() => parseConfig(invalidConfigInput))
-        .to.throw(
-          fefe.FefeError,
-          'gcloudCredentials: Properties not allowed: foo'
+      assert.deepStrictEqual(
+        parseConfig(invalidConfigInput),
+        fefe.failure(
+          fefe.branchError(invalidConfigInput, [
+            {
+              key: 'gcloudCredentials',
+              error: fefe.leafError(
+                { key: 'secret', foo: 'bar' },
+                'Properties not allowed: foo.'
+              ),
+            },
+          ])
         )
-        .that.deep.include({
-          value: invalidConfigInput,
-          path: ['gcloudCredentials'],
-        })
-        .and.has.property('originalError')
-        .that.include({ value: { key: 'secret', foo: 'bar' } })
+      )
+      // expect(() => )
+      //   .to.throw(
+      //     fefe.FefeError,
+      //     'gcloudCredentials: Properties not allowed: foo'
+      //   )
+      //   .that.deep.include({
+      //     value: invalidConfigInput,
+      //     path: ['gcloudCredentials'],
+      //   })
+      //   .and.has.property('originalError')
+      //   .that.include({ value: { key: 'secret', foo: 'bar' } })
     })
   })
 })

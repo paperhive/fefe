@@ -1,31 +1,42 @@
-import { FefeError } from './errors'
+import { partitionMapWithIndex, traverseWithIndex } from 'fp-ts/lib/Array'
+import { either, isLeft, left } from 'fp-ts/Either'
+
+import { branchError, leafError } from './errors'
+import { failure, isFailure, success } from './result'
 import { Validator } from './validate'
 
 export interface ArrayOptions {
   minLength?: number
   maxLength?: number
+  allErrors?: boolean
 }
 
 export function array<R>(
   elementValidator: Validator<R>,
-  { minLength, maxLength }: ArrayOptions = {}
-): (value: unknown) => R[] {
+  { minLength, maxLength, allErrors }: ArrayOptions = {}
+): Validator<R[]> {
+  const validate = (index: number, element: unknown) => {
+    const result = elementValidator(element)
+    if (isFailure(result)) return left({ key: index, error: result.left })
+    return result
+  }
   return (value: unknown) => {
-    if (!Array.isArray(value)) throw new FefeError(value, 'Not an array.')
+    if (!Array.isArray(value)) return failure(leafError(value, 'Not an array.'))
     if (minLength !== undefined && value.length < minLength)
-      throw new FefeError(value, `Has less than ${minLength} elements.`)
+      return failure(leafError(value, `Has less than ${minLength} elements.`))
     if (maxLength !== undefined && value.length > maxLength)
-      throw new FefeError(value, `Has more than ${maxLength} elements.`)
+      return failure(leafError(value, `Has more than ${maxLength} elements.`))
 
-    return value.map((element, index) => {
-      try {
-        return elementValidator(element)
-      } catch (error) {
-        if (error instanceof FefeError) {
-          throw error.createParentError(value, index)
-        }
-        throw error
-      }
-    })
+    if (allErrors) {
+      const results = partitionMapWithIndex(validate)(value)
+
+      if (results.left.length > 0)
+        return failure(branchError(value, results.left))
+      return success(results.right)
+    }
+
+    const result = traverseWithIndex(either)(validate)(value)
+    if (isLeft(result)) return failure(branchError(value, [result.left]))
+    return success(result.right)
   }
 }

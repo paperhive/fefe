@@ -1,9 +1,11 @@
-import { FefeError } from './errors'
+import { leafError } from './errors'
+import { failure, success } from './result'
+import { Validator } from './validate'
 
-export function boolean() {
-  return (value: unknown): boolean => {
-    // tslint:disable-next-line:strict-type-predicates
-    if (typeof value !== 'boolean') throw new FefeError(value, 'Not a boolean.')
-    return value
+export function boolean(): Validator<boolean> {
+  return (value: unknown) => {
+    if (typeof value !== 'boolean')
+      return failure(leafError(value, 'Not a boolean.'))
+    return success(value)
   }
 }

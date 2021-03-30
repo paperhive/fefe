@@ -1,10 +1,13 @@
-import { FefeError } from './errors'
+import { leafError } from './errors'
+import { failure, success } from './result'
+import { Validator } from './validate'
 
-export function enumerate<T extends string[]>(...args: T) {
-  return (value: unknown): T[number] => {
-    if (args.indexOf(value as string) === -1) {
-      throw new FefeError(value, `Not one of ${args.join(', ')}.`)
-    }
-    return value as T[number]
+export function enumerate<T extends (string | number)[]>(
+  ...args: T
+): Validator<T[number]> {
+  return (value: unknown) => {
+    if (args.indexOf(value as T[number]) === -1)
+      return failure(leafError(value, `Not one of ${args.join(', ')}.`))
+    return success(value as T[number])
   }
 }

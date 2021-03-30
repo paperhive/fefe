@@ -1,16 +1,16 @@
-import { FefeError } from './errors'
+import { leafError } from './errors'
+import { failure, success } from './result'
+import { Transformer } from './validate'
 
-export function parseBoolean() {
-  return (value: unknown): boolean => {
-    // tslint:disable-next-line:strict-type-predicates
-    if (typeof value !== 'string') throw new FefeError(value, 'Not a string.')
+export function parseBoolean(): Transformer<string, boolean> {
+  return (value: string) => {
     switch (value) {
       case 'true':
-        return true
+        return success(true)
       case 'false':
-        return false
+        return success(false)
       default:
-        throw new FefeError(value, 'Not a boolean.')
+        return failure(leafError(value, 'Not a boolean.'))
     }
   }
 }

@@ -1,85 +1,124 @@
-import { expect } from 'chai'
+import { assert } from 'chai'
 
-import { FefeError } from './errors'
-import { object, defaultTo, optional, ObjectOptions } from './object'
+import { object, defaultTo, optional } from './object'
 import { string } from './string'
+import { branchError, leafError } from './errors'
+import { failure, success } from './result'
+import { Validator } from './validate'
+import { number } from './number'
 
 describe('object()', () => {
-  it('should throw if value is not an object', () => {
-    const validate = object({})
-    expect(() => validate(null))
-      .to.throw(FefeError, 'Not an object.')
-      .that.deep.include({ value: null, path: [], child: undefined })
+  it('should return an error if value is not an object', () =>
+    assert.deepStrictEqual(
+      object({})(null),
+      failure(leafError(null, 'Not an object.'))
+    ))
+
+  it('should return an error if object has non-allowed key', () => {
+    const value = { foo: 'test', bar: true }
+    assert.deepStrictEqual(
+      object({ foo: string() })(value),
+      failure(leafError(value, 'Properties not allowed: bar.'))
+    )
   })
 
-  it('should throw if object has a missing key', () => {
-    const validate = object({ foo: string() })
+  it('should return an error if object has a missing key', () => {
     const value = {}
-    expect(() => validate(value))
-      .to.throw(FefeError, 'foo: Not a string.')
-      .that.deep.include({ value, path: ['foo'] })
+    assert.deepStrictEqual(
+      object({ foo: string() })(value),
+      failure(
+        branchError(value, [
+          { key: 'foo', error: leafError(undefined, 'Not a string.') },
+        ])
+      )
+    )
   })
 
-  it('should throw if object has a value does not validate', () => {
-    const validate = object({ foo: string() })
+  it('should return an error if object has a value that does not validate', () => {
     const value = { foo: 1337 }
-    expect(() => validate(value))
-      .to.throw(FefeError, 'foo: Not a string.')
-      .that.deep.include({ value, path: ['foo'] })
+    assert.deepStrictEqual(
+      object({ foo: string() })(value),
+      failure(
+        branchError(value, [
+          { key: 'foo', error: leafError(1337, 'Not a string.') },
+        ])
+      )
+    )
   })
 
-  it('should validate an object with shorthand notation', () => {
-    const validate = object({ foo: string() })
-    const result: { foo: string } = validate({ foo: 'bar' })
-    expect(result).to.eql({ foo: 'bar' })
+  it('should return all errors if requested and object has two value that do not validate', () => {
+    const value = { foo: 1337, bar: 'test' }
+    assert.deepStrictEqual(
+      object({ foo: string(), bar: number() }, { allErrors: true })(value),
+      failure(
+        branchError(value, [
+          { key: 'foo', error: leafError(1337, 'Not a string.') },
+          { key: 'bar', error: leafError('test', 'Not a number.') },
+        ])
+      )
+    )
   })
 
-  it('should validate an object with explicit notation', () => {
-    const validate = object({ foo: { validator: string() } })
-    const result: { foo: string } = validate({ foo: 'bar' })
-    expect(result).to.eql({ foo: 'bar' })
+  it('should validate an object', () => {
+    const value = { foo: 'bar' }
+    assert.deepStrictEqual(object({ foo: string() })(value), success(value))
+  })
+
+  it('should validate an object with allErrors', () => {
+    const value = { foo: 'bar' }
+    assert.deepStrictEqual(
+      object({ foo: string() }, { allErrors: true })(value),
+      success(value)
+    )
   })
 
   it('should validate an object with optional key', () => {
-    const validate = object({ foo: { validator: string(), optional: true } })
-    const result: { foo?: string } = validate({ foo: 'bar' })
-    expect(result).to.eql({ foo: 'bar' })
-    const emptyResult: { foo?: string } = validate({})
-    expect(emptyResult).to.eql({})
+    const validate: Validator<{ foo?: string }> = object({
+      foo: optional(string()),
+    })
+    assert.deepStrictEqual(validate({ foo: 'bar' }), success({ foo: 'bar' }))
+    assert.deepStrictEqual(validate({}), success({}))
+    assert.notProperty(validate({}), 'foo')
+    assert.deepStrictEqual(validate({ foo: undefined }), success({}))
+    assert.notProperty(validate({ foo: undefined }), 'foo')
   })
 
   it('should validate an object with default value', () => {
-    const validate = object({ foo: { validator: string(), default: 'bar' } })
-    const result: { foo: string } = validate({})
-    expect(result).to.eql({ foo: 'bar' })
-  })
-
-  it('should validate an object with default value function', () => {
-    const validate = object({
-      foo: { validator: string(), default: () => 'bar' },
-    })
-    const result: { foo: string } = validate({})
-    expect(result).to.eql({ foo: 'bar' })
+    const validate = object({ foo: defaultTo(string(), 'bar') })
+    assert.deepStrictEqual(validate({ foo: 'baz' }), success({ foo: 'baz' }))
+    assert.deepStrictEqual(validate({}), success({ foo: 'bar' }))
+    assert.deepStrictEqual(
+      validate({ foo: undefined }),
+      success({ foo: 'bar' })
+    )
   })
 })
 
 describe('defaultTo()', () => {
-  it('should return an object options object with default value/function', () => {
-    const validator = string()
-    const options: ObjectOptions<string> = defaultTo(validator, 'foo')
-    expect(options).to.eql({ validator, default: 'foo' })
-  })
+  const validate = defaultTo(string(), 'foo')
+
+  it('should validate if value is provided', () =>
+    assert.deepStrictEqual(validate('bar'), success('bar')))
+
+  it('should return an error if non-passing value is provided', () =>
+    assert.deepStrictEqual(
+      validate(42),
+      failure(leafError(42, 'Not a string.'))
+    ))
+
+  it('should return default if no value is provided', () =>
+    assert.deepStrictEqual(validate(undefined), success('foo')))
 })
 
 describe('optional()', () => {
-  it('should return an optional object options object', () => {
-    const validator = string()
-    const options = optional(validator)
-    expect(options).to.eql({ validator, optional: true })
-    const validate = object({ foo: options })
-    const result: { foo?: string } = validate({ foo: 'bar' })
-    expect(result).to.eql({ foo: 'bar' })
-    const emptyResult: { foo?: string } = validate({})
-    expect(emptyResult).to.eql({})
-  })
+  const validate = optional(string())
+
+  it('should validate if value is provided', () =>
+    assert.deepStrictEqual(validate('bar'), success('bar')))
+
+  it('should return an error if non-passing value is provided', () =>
+    assert.deepStrictEqual(
+      validate(42),
+      failure(leafError(42, 'Not a string.'))
+    ))
 })

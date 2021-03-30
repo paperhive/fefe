@@ -1,43 +1,59 @@
-import { expect } from 'chai'
+import { assert } from 'chai'
 
-import { FefeError } from './errors'
 import { number } from './number'
+import { leafError } from './errors'
+import { failure, success } from './result'
 
 describe('number()', () => {
-  it('should throw if not a number', () => {
-    expect(() => number()('foo')).to.throw(FefeError, 'Not a number.')
-  })
-
-  it('should throw if NaN', () => {
-    expect(() => number()(1 / 0 - 1 / 0)).to.throw(
-      FefeError,
-      'NaN is not allowed.'
+  it('should return an error if not a number', () => {
+    assert.deepStrictEqual(
+      number()('foo'),
+      failure(leafError('foo', 'Not a number.'))
     )
   })
 
-  it('should throw if infinite', () => {
-    expect(() => number()(1 / 0)).to.throw(
-      FefeError,
-      'Infinity is not allowed.'
+  it('should return an error if NaN', () => {
+    const value = 1 / 0 - 1 / 0
+    assert.deepStrictEqual(
+      number()(value),
+      failure(leafError(value, 'NaN is not allowed.'))
     )
   })
 
-  it('should throw if not integer', () => {
-    expect(() => number({ integer: true })(1.5)).to.throw(
-      FefeError,
-      'Not an integer.'
+  it('should return an error if infinite', () => {
+    const value = 1 / 0
+    assert.deepStrictEqual(
+      number()(value),
+      failure(leafError(value, 'Infinity is not allowed.'))
     )
   })
 
-  it('should throw if less than min', () => {
-    expect(() => number({ min: 0 })(-1)).to.throw(FefeError, 'Less than 0.')
+  it('should return an error if not integer', () => {
+    const value = 1.5
+    assert.deepStrictEqual(
+      number({ integer: true })(value),
+      failure(leafError(value, 'Not an integer.'))
+    )
   })
 
-  it('should throw if less than max', () => {
-    expect(() => number({ max: 0 })(11)).to.throw(FefeError, 'Greater than 0.')
+  it('should return an error if less than min', () => {
+    const value = -1
+    assert.deepStrictEqual(
+      number({ min: 1 })(value),
+      failure(leafError(value, 'Less than 1.'))
+    )
+  })
+
+  it('should return an error if less than max', () => {
+    const value = 11
+    assert.deepStrictEqual(
+      number({ max: 3 })(value),
+      failure(leafError(value, 'Greater than 3.'))
+    )
   })
 
   it('return a valid number', () => {
-    expect(number({ min: 0, max: 2, integer: true })(1)).to.equal(1)
+    const value = 2
+    assert.deepStrictEqual(number({ min: 1, max: 3 })(value), success(value))
   })
 })

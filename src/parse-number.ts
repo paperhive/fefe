@@ -1,11 +1,11 @@
-import { FefeError } from './errors'
+import { leafError } from './errors'
+import { failure, success } from './result'
+import { Transformer } from './validate'
 
-export function parseNumber() {
-  return (value: unknown): number => {
-    // tslint:disable-next-line:strict-type-predicates
-    if (typeof value !== 'string') throw new FefeError(value, 'Not a string.')
+export function parseNumber(): Transformer<string, number> {
+  return (value: string) => {
     const num = parseFloat(value)
-    if (Number.isNaN(num)) throw new FefeError(value, 'Not a number.')
-    return num
+    if (Number.isNaN(num)) return failure(leafError(value, 'Not a number.'))
+    return success(num)
   }
 }

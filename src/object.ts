@@ -1,19 +1,12 @@
-import { FefeError } from './errors'
-import { Validator } from './validate'
+import { partitionMap, traverse } from 'fp-ts/lib/Array'
+import { either, Either, isLeft, left, right } from 'fp-ts/lib/Either'
+import { pipe } from 'fp-ts/lib/function'
+import { branchError, ChildError, leafError } from './errors'
+import { failure, isFailure, success } from './result'
+import { Validator, ValidatorReturnType } from './validate'
 
-export interface ObjectOptions<R> {
-  validator: Validator<R>
-  optional?: boolean
-  default?: R | (() => R)
-}
-
-export type ObjectDefinitionValue<R> = Validator<R> | ObjectOptions<R>
-
-export type ObjectDefinition = Record<string, ObjectDefinitionValue<unknown>>
-
-export type ObjectReturnType<T> = T extends ObjectDefinitionValue<infer U>
-  ? U
-  : never
+export type ObjectValueValidator = Validator<unknown> & { optional?: boolean }
+export type ObjectDefinition = Record<string, ObjectValueValidator>
 
 type FilterObject<T, C> = { [k in keyof T]: T[k] extends C ? k : never }
 type MatchingKeys<T, C> = FilterObject<T, C>[keyof T]
@@ -24,94 +17,109 @@ type MandatoryKeys<D> = NonMatchingKeys<D, { optional: true }>
 type OptionalKeys<D> = MatchingKeys<D, { optional: true }>
 
 export type ObjectResult<D> = {
-  [k in MandatoryKeys<D>]: ObjectReturnType<D[k]>
+  [k in MandatoryKeys<D>]: ValidatorReturnType<D[k]>
 } &
-  { [k in OptionalKeys<D>]?: ObjectReturnType<D[k]> }
+  { [k in OptionalKeys<D>]?: ValidatorReturnType<D[k]> }
+
+export interface ObjectOptions {
+  allowExcessProperties?: boolean
+  allErrors?: boolean
+}
+
+type ValidatedEntry<K, T> =
+  | { type: 'mandatory'; key: K; value: T }
+  | { type: 'optional'; key: K }
 
 export function object<D extends ObjectDefinition>(
   definition: D,
-  { allowExcessProperties = false }: { allowExcessProperties?: boolean } = {}
-): (v: unknown) => ObjectResult<D> {
-  Object.entries(definition).forEach(([, definitionValue]) => {
-    if (typeof definitionValue !== 'object') return
-    if (definitionValue.default !== undefined && definitionValue.optional) {
-      throw new Error('default and optional cannot be used together')
+  { allowExcessProperties = false, allErrors = false }: ObjectOptions = {}
+): Validator<ObjectResult<D>> {
+  function getEntryValidator(value: Record<string | number | symbol, unknown>) {
+    return <K extends keyof D>([key, validator]: [
+      K,
+      ObjectValueValidator
+    ]): Either<ChildError, ValidatedEntry<K, ValidatorReturnType<D[K]>>> => {
+      if (validator.optional && (!(key in value) || value[key] === undefined))
+        return right({ type: 'optional', key })
+      const result = validator(value[key])
+      if (isFailure(result)) return left({ key, error: result.left })
+      return right({
+        type: 'mandatory',
+        key,
+        value: result.right as ValidatorReturnType<D[K]>,
+      })
     }
-  })
+  }
+
+  function createObjectFromEntries(
+    entries: ValidatedEntry<keyof D, ValidatorReturnType<D[keyof D]>>[]
+  ) {
+    return pipe(
+      entries,
+      partitionMap(
+        (entry: ValidatedEntry<keyof D, ValidatorReturnType<D[keyof D]>>) =>
+          entry.type === 'optional'
+            ? left(entry.key)
+            : right([entry.key, entry.value] as [
+                keyof D,
+                ValidatorReturnType<D[keyof D]>
+              ])
+      ),
+      ({ right }) => Object.fromEntries(right) as ObjectResult<D>
+    )
+  }
 
   return (value: unknown) => {
-    // note: type 'object' includes null
-    // tslint:disable-next-line:strict-type-predicates
     if (typeof value !== 'object' || value === null)
-      throw new FefeError(value, 'Not an object.')
+      return failure(leafError(value, 'Not an object.'))
 
     if (!allowExcessProperties) {
       const excessProperties = Object.keys(value).filter(
         (key) => !definition[key]
       )
       if (excessProperties.length > 0)
-        throw new FefeError(
-          value,
-          `Properties not allowed: ${excessProperties.join(', ')}`
+        return failure(
+          leafError(
+            value,
+            `Properties not allowed: ${excessProperties.join(', ')}.`
+          )
         )
     }
 
-    const validated = {} as ObjectResult<D>
-
-    Object.entries(definition).forEach(
-      ([key, definitionValue]: [string, ObjectDefinitionValue<unknown>]) => {
-        const options: ObjectOptions<unknown> =
-          typeof definitionValue === 'object'
-            ? definitionValue
-            : { validator: definitionValue }
-
-        const currentValue: unknown = (value as Record<string, string>)[key]
-
-        // tslint:disable-next-line:strict-type-predicates
-        if (currentValue === undefined) {
-          if (options.default !== undefined) {
-            validated[key as keyof typeof validated] =
-              typeof options.default === 'function'
-                ? options.default()
-                : options.default
-            return
-          }
-
-          if (options.optional) {
-            return
-          }
-        }
-        try {
-          validated[key as keyof typeof validated] = options.validator(
-            currentValue
-          ) as ObjectResult<D>[keyof ObjectResult<D>]
-        } catch (error) {
-          if (error instanceof FefeError) {
-            throw error.createParentError(value, key)
-          }
-          throw error
-        }
-      }
+    const entries = Object.entries(definition)
+    const validateEntry = getEntryValidator(
+      value as Record<string | number | symbol, unknown>
     )
-    return validated
+
+    if (allErrors) {
+      const results = partitionMap(validateEntry)(entries)
+      if (results.left.length > 0)
+        return failure(branchError(value, results.left))
+      return success(createObjectFromEntries(results.right))
+    }
+
+    const result = traverse(either)(validateEntry)(entries)
+    if (isLeft(result)) return failure(branchError(value, [result.left]))
+    return success(createObjectFromEntries(result.right))
   }
 }
 
-export function defaultTo<R>(
-  validator: Validator<R>,
-  _default: R | (() => R)
-): ObjectOptions<R> {
-  return {
-    validator,
-    default: _default,
+export function defaultTo<T, D>(
+  validator: Validator<T>,
+  _default: D | (() => D)
+): Validator<T | D> {
+  return (value: unknown) => {
+    if (value !== undefined) return validator(value)
+    return success(_default instanceof Function ? _default() : _default)
   }
 }
 
-export function optional<R>(
-  validator: Validator<R>
-): { validator: Validator<R>; optional: true } {
-  return {
-    validator,
-    optional: true,
+export function optional<T>(
+  validator: Validator<T>
+): Validator<T> & { optional: true } {
+  const validate = ((v: unknown) => validator(v)) as Validator<T> & {
+    optional: true
   }
+  validate.optional = true
+  return validate
 }
