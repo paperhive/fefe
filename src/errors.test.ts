@@ -5,10 +5,10 @@ import {
   leafError,
   getLeafErrorReasons,
   getErrorString,
-  FefeError2,
+  FefeError,
 } from './errors'
 
-const error: FefeError2 = branchError({ id: 'c0ff33', emails: ['hurz'] }, [
+const error: FefeError = branchError({ id: 'c0ff33', emails: ['hurz'] }, [
   { key: 'id', error: leafError('c0ff33', 'Not a number.') },
   {
     key: 'emails',

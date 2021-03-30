@@ -1,7 +1,7 @@
 import { partitionMap, traverse } from 'fp-ts/lib/Array'
 import { either, Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/function'
-import { branchError, ChildError2, leafError } from './errors'
+import { branchError, ChildError, leafError } from './errors'
 import { failure, isFailure, success } from './result'
 import { Validator, ValidatorReturnType } from './validate'
 
@@ -38,7 +38,7 @@ export function object<D extends ObjectDefinition>(
     return <K extends keyof D>([key, validator]: [
       K,
       ObjectValueValidator
-    ]): Either<ChildError2, ValidatedEntry<K, ValidatorReturnType<D[K]>>> => {
+    ]): Either<ChildError, ValidatedEntry<K, ValidatorReturnType<D[K]>>> => {
       if (validator.optional && (!(key in value) || value[key] === undefined))
         return right({ type: 'optional', key })
       const result = validator(value[key])
