@@ -1,8 +1,7 @@
 import { assert } from 'chai'
-import { chain } from 'fp-ts/lib/Either'
-import { flow } from 'fp-ts/lib/function'
 
 import * as fefe from '.'
+import { pipe } from './pipe'
 
 describe('Integration tests', () => {
   describe('Basic validation', () => {
@@ -63,7 +62,7 @@ describe('Integration tests', () => {
   describe('Basic transformation (sanitization)', () => {
     const sanitizeMovie = fefe.object({
       title: fefe.string(),
-      releasedAt: flow(fefe.string(), chain(fefe.parseDate())),
+      releasedAt: fefe.pipe(fefe.string()).pipe(fefe.parseDate()),
     })
 
     it('validates a movie and parses the date string', () => {
@@ -99,7 +98,7 @@ describe('Integration tests', () => {
   describe('Basic transformation (on-demand sanitization)', () => {
     const sanitizeDate = fefe.union(
       fefe.date(),
-      flow(fefe.string(), chain(fefe.parseDate()))
+      pipe(fefe.string()).pipe(fefe.parseDate())
     )
     const date = new Date()
 
@@ -126,14 +125,11 @@ describe('Integration tests', () => {
 
   describe('Complex transformation and validation', () => {
     const parseConfig = fefe.object({
-      gcloudCredentials: flow(
-        fefe.string(),
-        chain(fefe.parseJson()),
-        chain(fefe.object({ key: fefe.string() }))
-      ),
-      whitelist: flow(
-        fefe.string(),
-        chain((value) => fefe.success(value.split(',')))
+      gcloudCredentials: pipe(fefe.string())
+        .pipe(fefe.parseJson())
+        .pipe(fefe.object({ key: fefe.string() })),
+      whitelist: pipe(fefe.string()).pipe((value) =>
+        fefe.success(value.split(','))
       ),
     })
 

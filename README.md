@@ -50,16 +50,14 @@ type Person = ValidatorReturnType<typeof validatePerson> // { name: string }
 
 #### Parse a value
 
-In this example a `string` needs to be parsed as a `Date`. Chaining functions can be achieved by the standard functional tools like `flow` and `chain` in [fp-ts](https://www.npmjs.com/package/fp-ts).
+In this example a `string` needs to be parsed as a `Date`. You can use `pipe()` to pass a value through multiple functions:
 
 ```typescript
-import { object, parseDate, string, ValidatorReturnType } from 'fefe'
-import { chain } from 'fp-ts/lib/Either'
-import { flow } from 'fp-ts/lib/function'
+import { object, parseDate, pipe, string, ValidatorReturnType } from 'fefe'
 
 const sanitizeMovie = object({
   title: string(),
-  releasedAt: flow(string(), chain(parseDate()))
+  releasedAt: pipe(string()).pipe(parseDate())
 })
 
 // { title: string, releasedAt: Date }
@@ -73,40 +71,34 @@ const movie: Movie = sanitizeMovie({
 
 Then `movie.right` equals `{ title: 'Star Wars', releasedAt: Date(1977-05-25T12:00:00.000Z) }` (`releasedAt` now is a date).
 
+**Note:** Chaining functions can also be achieved by the standard functional tools like `flow` and `chain` in [fp-ts](https://www.npmjs.com/package/fp-ts).
+
 #### Parse a value on demand (sanitize)
 
 Sometimes a value might already be of the right type. In the following example we use `union()` to create a sanitizer that returns a provided value if it is a `Date` already and parse it otherwise. If it can't be parsed either the function will throw:
 
 ```typescript
-import { date, parseDate, union } from 'fefe'
-import { chain } from 'fp-ts/lib/Either'
-import { flow } from 'fp-ts/lib/function'
+import { date, parseDate, pipe, union } from 'fefe'
 
 const sanitizeDate = union(
   date(),
-  flow(string(), chain(parseDate()))
+  pipe(string()).pipe(parseDate())
 )
 ```
 
 ### 🛠️ Complex transformation example
 
-This is a more complex example that can be applied to parsing environment variables or query string parameters. Again, we use `flow` and `chain` to compose functions. Here, we also add a custom function that splits a string into an array.
+This is a more complex example that can be applied to parsing environment variables or query string parameters. Again, we use `pipe` to compose functions. Here, we also add a custom function that splits a string into an array.
 
 ```typescript
-import { object, parseJson, string, success } from 'fefe'
-import { chain } from 'fp-ts/lib/Either'
-import { flow } from 'fp-ts/lib/function'
+import { object, parseJson, pipe, string, success } from 'fefe'
 
 const parseConfig = object({
-  gcloudCredentials: flow(
-    string()
-    chain(parseJson()),
-    chain(object({ secret: string() }))
-  ),
-  whitelist: flow(
-    string(),
-    chain(secret => success(str.split(',')))
-  )
+  gcloudCredentials: pipe(string())
+    .pipe(parseJson())
+    .pipe(object({ secret: string() })),
+  whitelist: pipe(string()
+    .pipe(secret => success(str.split(',')))
 })
 
 // { gcloudCredentials: { secret: string }, whitelist: string[] }
@@ -254,6 +246,10 @@ Options:
 You can use the following helpers:
 * `optional(validator: Validator<T>)`: generates an optional key validator with the given `validator`.
 * `defaultTo(validator: Validator<T>, default: D | () => D`: generates a validator that defaults to `default()` if it is a function and `default` otherwise.
+
+### `pipe(validator1: Transformer<A, B>): Pipe<A, B>`
+
+Returns a transformer that offers a `.pipe(validator2: Transformer<B, C>): Pipe<A, C>` method.
 
 ### `string(options?): Validator<string>`
 
