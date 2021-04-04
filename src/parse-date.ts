@@ -1,6 +1,6 @@
 import { leafError } from './errors'
 import { failure, success } from './result'
-import { Transformer } from './validate'
+import { Transformer } from './transformer'
 
 const isoDateRegex = /^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d(\.\d+)?([+-][0-2]\d:[0-5]\d|Z)$/
 

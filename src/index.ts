@@ -1,6 +1,6 @@
 export * from './errors'
 export * from './result'
-export * from './validate'
+export * from './transformer'
 
 export * from './array'
 export * from './boolean'

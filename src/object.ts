@@ -3,7 +3,7 @@ import { either, Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/function'
 import { branchError, ChildError, leafError } from './errors'
 import { failure, isFailure, success } from './result'
-import { Validator, ValidatorReturnType } from './validate'
+import { Validator, ValidatorReturnType } from './transformer'
 
 export type ObjectValueValidator = Validator<unknown> & { optional?: boolean }
 export type ObjectDefinition = Record<string, ObjectValueValidator>

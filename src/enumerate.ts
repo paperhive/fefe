@@ -1,6 +1,6 @@
 import { leafError } from './errors'
 import { failure, success } from './result'
-import { Validator } from './validate'
+import { Validator } from './transformer'
 
 export function enumerate<T extends (string | number)[]>(
   ...args: T
