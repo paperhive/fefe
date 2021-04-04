@@ -3,7 +3,7 @@ import { either, isLeft, left } from 'fp-ts/Either'
 
 import { branchError, leafError } from './errors'
 import { failure, isFailure, success } from './result'
-import { Validator } from './validate'
+import { Validator } from './transformer'
 
 export interface ArrayOptions {
   minLength?: number

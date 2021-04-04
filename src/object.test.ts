@@ -4,7 +4,7 @@ import { object, defaultTo, optional } from './object'
 import { string } from './string'
 import { branchError, leafError } from './errors'
 import { failure, success } from './result'
-import { Validator } from './validate'
+import { Validator } from './transformer'
 import { number } from './number'
 
 describe('object()', () => {

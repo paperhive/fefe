@@ -1,6 +1,6 @@
 import { leafError } from './errors'
 import { failure, success } from './result'
-import { Transformer } from './validate'
+import { Transformer } from './transformer'
 
 export function parseBoolean(): Transformer<string, boolean> {
   return (value: string) => {
