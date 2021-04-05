@@ -1,11 +1,10 @@
 import { assert } from 'chai'
-import { chain } from 'fp-ts/lib/Either'
-import { flow } from 'fp-ts/lib/function'
 
 import { branchError, leafError } from './errors'
 import { array } from './array'
 import { boolean } from './boolean'
 import { failure, success } from './result'
+import { pipe } from './pipe'
 
 describe('array()', () => {
   it('should return error if not a array', () => {
@@ -57,10 +56,7 @@ describe('array()', () => {
 
   it('should return a valid array with transformed values', () => {
     const transform = array(
-      flow(
-        boolean(),
-        chain((v: boolean) => success(`transformed: ${v}`))
-      )
+      pipe(boolean()).pipe((v: boolean) => success(`transformed: ${v}`))
     )
     assert.deepStrictEqual(
       transform([false, true]),
