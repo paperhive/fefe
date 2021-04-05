@@ -1,4 +1,4 @@
-import { leafError } from './errors'
+import { LeafError, leafError } from './errors'
 import { failure, success } from './result'
 import { Validator } from './transformer'
 
@@ -12,7 +12,7 @@ export function string({
   minLength,
   maxLength,
   regex,
-}: StringOptions = {}): Validator<string> {
+}: StringOptions = {}): Validator<string, LeafError> {
   return (value: unknown) => {
     // tslint:disable-next-line:strict-type-predicates
     if (typeof value !== 'string')

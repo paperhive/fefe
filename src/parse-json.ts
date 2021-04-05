@@ -1,8 +1,8 @@
-import { leafError } from './errors'
+import { LeafError, leafError } from './errors'
 import { failure, success } from './result'
 import { Transformer } from './transformer'
 
-export function parseJson(): Transformer<string, unknown> {
+export function parseJson(): Transformer<string, unknown, LeafError> {
   return (value: string) => {
     try {
       return success(JSON.parse(value))

@@ -1,4 +1,4 @@
-import { leafError } from './errors'
+import { LeafError, leafError } from './errors'
 import { failure, success } from './result'
 import { Validator } from './transformer'
 
@@ -7,7 +7,10 @@ export interface DateOptions {
   max?: Date
 }
 
-export function date({ min, max }: DateOptions = {}): Validator<Date> {
+export function date({ min, max }: DateOptions = {}): Validator<
+  Date,
+  LeafError
+> {
   return (value: unknown) => {
     if (!(value instanceof Date))
       return failure(leafError(value, 'Not a date.'))
