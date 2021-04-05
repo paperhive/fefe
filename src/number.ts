@@ -1,4 +1,4 @@
-import { leafError } from './errors'
+import { LeafError, leafError } from './errors'
 import { failure, success } from './result'
 import { Validator } from './transformer'
 
@@ -16,7 +16,7 @@ export function number({
   integer,
   allowNaN = false,
   allowInfinity = false,
-}: NumberOptions = {}): Validator<number> {
+}: NumberOptions = {}): Validator<number, LeafError> {
   return (value: unknown) => {
     if (typeof value !== 'number')
       return failure(leafError(value, 'Not a number.'))

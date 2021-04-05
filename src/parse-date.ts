@@ -1,4 +1,4 @@
-import { leafError } from './errors'
+import { LeafError, leafError } from './errors'
 import { failure, success } from './result'
 import { Transformer } from './transformer'
 
@@ -6,7 +6,8 @@ const isoDateRegex = /^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d(\.\d+)?([+-]
 
 export function parseDate({ iso = false }: { iso?: boolean } = {}): Transformer<
   string,
-  Date
+  Date,
+  LeafError
 > {
   return (value: string) => {
     if (iso && !isoDateRegex.test(value))

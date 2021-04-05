@@ -1,10 +1,10 @@
-import { FefeError, leafError, getErrorString } from './errors'
+import { FefeError, leafError, getErrorString, LeafError } from './errors'
 import { failure, isSuccess, success } from './result'
 import { Validator, ValidatorReturnType } from './transformer'
 
 export function union<T extends Validator<unknown>[]>(
   ...validators: T
-): Validator<ValidatorReturnType<T[number]>> {
+): Validator<ValidatorReturnType<T[number]>, LeafError> {
   return (value: unknown) => {
     const errors: FefeError[] = []
     for (const validator of validators) {

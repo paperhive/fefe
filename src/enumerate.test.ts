@@ -20,6 +20,6 @@ describe('enumerate()', () => {
 
   it('return a valid value', () => {
     const result: Result<'foo' | 'bar'> = validate('bar')
-    assert.deepStrictEqual(result, success('bar'))
+    assert.deepStrictEqual(result, success('bar' as const))
   })
 })
