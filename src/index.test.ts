@@ -1,7 +1,6 @@
 import { assert } from 'chai'
 
 import * as fefe from '.'
-import { pipe } from './pipe'
 
 describe('Integration tests', () => {
   describe('Basic validation', () => {
@@ -98,7 +97,7 @@ describe('Integration tests', () => {
   describe('Basic transformation (on-demand sanitization)', () => {
     const sanitizeDate = fefe.union(
       fefe.date(),
-      pipe(fefe.string()).pipe(fefe.parseDate())
+      fefe.pipe(fefe.string()).pipe(fefe.parseDate())
     )
     const date = new Date()
 
@@ -125,12 +124,13 @@ describe('Integration tests', () => {
 
   describe('Complex transformation and validation', () => {
     const parseConfig = fefe.object({
-      gcloudCredentials: pipe(fefe.string())
+      gcloudCredentials: fefe
+        .pipe(fefe.string())
         .pipe(fefe.parseJson())
         .pipe(fefe.object({ key: fefe.string() })),
-      whitelist: pipe(fefe.string()).pipe((value) =>
-        fefe.success(value.split(','))
-      ),
+      whitelist: fefe
+        .pipe(fefe.string())
+        .pipe((value) => fefe.success(value.split(','))),
     })
 
     type Config = fefe.ValidatorReturnType<typeof parseConfig>
