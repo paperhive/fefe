@@ -142,7 +142,7 @@ You may wonder why `fefe` does not just throw an error and the answer is:
 
 You can read more about it [here](https://medium.com/nmc-techblog/functional-error-handling-in-js-8b7f7e4fa092).
 
-For simplifying the transition from a 2.x codebase you can use the `toThrow(t: Transformer<V, T>): (v: V) => T` function that returns the value directly and throws instead of returning a `FefeError` in the case of an error. Note that the thrown `FefeThrowError` has a different structure than the pre-3.x `FefeError`.
+For simplifying the transition from a 2.x codebase you can use the `toThrow(t: Transformer<V, T>)` function that returns a funtion `(v: V) => T` that returns the value directly and throws instead of returning a `FefeError` in the case of an error. Note that the thrown `FefeThrowError` has a different structure than the pre-3.x `FefeError`.
 
 
 ### Validator<T>
