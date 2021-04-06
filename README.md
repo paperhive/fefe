@@ -20,8 +20,6 @@ npm install fefe
 
 ## Usage
 
-The
-
 ### 🔎 Validation example
 
 Validation checks the provided value and returns it with proper types.
