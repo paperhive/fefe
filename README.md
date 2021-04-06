@@ -225,6 +225,29 @@ Options:
 
 Returns a validator that returns `value` if if equals one of the strings `value1`, `value2`, .... and returns an error otherwise.
 
+### `mapObjectKeys(map): Transformer<S, T>`
+
+Returns a transformer that takes the input object and returns a new object with the keys of `map`. For each key `k` the resulting object's value is the value for the key `map[k]` of the input object.
+
+Options:
+* `map: Record<string, keyof S>`: maps output object keys to input object keys.
+
+This function is very useful in combination with `object()`:
+
+```typescript
+const validateEnv = pipe(
+    object({
+      FOO: string(),
+      BAR: optional(pipe(string()).pipe(parseNumber())),
+    })
+  )
+  .pipe(mapObjectKeys({ foo: 'FOO', bar: 'BAR' }))
+
+const result = validatEnv({ FOO: 'str', BAR: '1337' })
+```
+Then `isSuccess(result)` will be `true` and `result.right` equals to `{ foo: 'str', bar: 1337 }`.
+
+
 ### `number(options?): Validator<number>`
 
 Returns a validator that returns `value` if it is a number and returns an error otherwise.

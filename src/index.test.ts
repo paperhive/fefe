@@ -183,4 +183,21 @@ describe('Integration tests', () => {
       //   .that.include({ value: { key: 'secret', foo: 'bar' } })
     })
   })
+
+  describe('Environment variables parsing and validation', () => {
+    const transform = fefe
+      .pipe(
+        fefe.object({
+          FOO: fefe.string(),
+          BAR: fefe.optional(fefe.pipe(fefe.string()).pipe(fefe.parseNumber())),
+        })
+      )
+      .pipe(fefe.mapObjectKeys({ foo: 'FOO', bar: 'BAR' }))
+
+    it('should parse env vars', () =>
+      assert.deepStrictEqual(
+        transform({ FOO: 'str', BAR: '1337' }),
+        fefe.success({ foo: 'str', bar: 1337 })
+      ))
+  })
 })
