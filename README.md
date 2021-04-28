@@ -220,6 +220,16 @@ Returns a validator that returns `value` if it is a Date and returns an error ot
 Options:
 * `options.min?: Date`, `options.max?: Date`: restrict date
 
+### `discriminatedUnion(key, definition, options?): Validator<ObjectResult<D>>`
+
+Returns a validator that returns `value` if:
+* it is an object and
+* the `value[key]` is a key of `definition`
+* `value` (without `key`) passes the validation as specified in `definition[key]`.
+Otherwise it returns an error. A new object is returned that has the results of the validator functions as values.
+
+Options: see `object()`.
+
 ### `enumerate(value1, value2, ...): Validator<value1 | value2 | ...>`
 
 Returns a validator that returns `value` if if equals one of the strings `value1`, `value2`, .... and returns an error otherwise.
@@ -258,7 +268,7 @@ Options:
 
 ### `object(definition, options?): Validator<ObjectResult<D>>`
 
-Returns a validator that returns `value` if it is an object and all values pass the validation as specified in `definition`, otherwise it returns an error. A new object is returned that has the results of the validator functions as values.
+Returns a validator that returns a copy of `value` if it is an object and all values pass the validation as specified in `definition`, otherwise it returns an error. A new object is returned that has the results of the validator functions as values.
 
 Options:
 * `definition: ObjectDefinition`: an object where each value is a `Validator<T>`.
