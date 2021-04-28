@@ -268,7 +268,7 @@ Options:
 
 ### `object(definition, options?): Validator<ObjectResult<D>>`
 
-Returns a validator that returns a copy of `value` if it is an object and all values pass the validation as specified in `definition`, otherwise it returns an error. A new object is returned that has the results of the validator functions as values.
+Returns a validator that returns `value` if it is an object and all values pass the validation as specified in `definition`, otherwise it returns an error. A new object is returned that has the results of the validator functions as values.
 
 Options:
 * `definition: ObjectDefinition`: an object where each value is a `Validator<T>`.
