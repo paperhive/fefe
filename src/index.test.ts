@@ -16,6 +16,7 @@ describe('Integration tests', () => {
       joinedAt: fefe.date(),
       favoriteDishes: fefe.array(fefe.string()),
       notifications: fefe.enumerate('immediately', 'daily', 'never'),
+      emails: fefe.objectMap(fefe.string()),
     })
 
     type Person = fefe.ValidatorReturnType<typeof validatePerson>
@@ -29,6 +30,10 @@ describe('Integration tests', () => {
       joinedAt: new Date(),
       favoriteDishes: ['Pho Bo', 'Sushi'],
       notifications: 'daily',
+      emails: {
+        work: 'andre@work.com',
+        home: 'andre@home.org',
+      },
     }
 
     it('validates a person', () =>
