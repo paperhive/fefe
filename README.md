@@ -279,6 +279,14 @@ You can use the following helpers:
 * `optional(validator: Validator<T>)`: generates an optional key validator with the given `validator`.
 * `defaultTo(validator: Validator<T>, default: D | () => D`: generates a validator that defaults to `default()` if it is a function and `default` otherwise.
 
+### `objectMap(valueValidator, options?): Validator<{ [k: string]?: T }>`
+
+Returns a validator that returns a map with value type T if all values pass the `valueValidator`, otherwise it returns an error. A new object is returned that has the results of the validator functions as values.
+
+Options:
+* `valueValidator: Validator<T>`: validator that is applied to each value.
+* `options.allErrors?: boolean`: set to `true` to return all errors instead of only the first.
+
 ### `pipe(validator1: Transformer<A, B>): Pipe<A, B>`
 
 Returns a transformer that offers a `.pipe(validator2: Transformer<B, C>): Pipe<A, C>` method.
