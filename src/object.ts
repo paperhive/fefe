@@ -18,8 +18,7 @@ type OptionalKeys<D> = MatchingKeys<D, { optional: true }>
 
 export type ObjectResult<D> = {
   [k in MandatoryKeys<D>]: ValidatorReturnType<D[k]>
-} &
-  { [k in OptionalKeys<D>]?: ValidatorReturnType<D[k]> }
+} & { [k in OptionalKeys<D>]?: ValidatorReturnType<D[k]> }
 
 export interface ObjectOptions {
   allowExcessProperties?: boolean

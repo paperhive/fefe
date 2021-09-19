@@ -7,7 +7,9 @@ export function parseJson(): Transformer<string, unknown, LeafError> {
     try {
       return success(JSON.parse(value))
     } catch (error) {
-      return failure(leafError(value, `Invalid JSON: ${error.message}.`))
+      return failure(
+        leafError(value, `Invalid JSON: ${(error as Error).message}.`)
+      )
     }
   }
 }

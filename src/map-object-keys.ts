@@ -14,10 +14,9 @@ type OptionalKeys<V, M extends MapObjectKeysMap<V>> = MatchingKeys<
 
 export type MapObjectKeysResult<V, M extends MapObjectKeysMap<V>> = {
   [k in Extract<keyof M, OptionalKeys<V, M>>]?: V[M[k]]
-} &
-  {
-    [k in Exclude<keyof M, OptionalKeys<V, M>>]: V[M[k]]
-  }
+} & {
+  [k in Exclude<keyof M, OptionalKeys<V, M>>]: V[M[k]]
+}
 
 export function mapObjectKeys<V, M extends MapObjectKeysMap<V>>(
   map: M
